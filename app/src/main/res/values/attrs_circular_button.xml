@@ -1,0 +1,10 @@
+<resources>
+    <declare-styleable name="CircularButton">
+        <attr name="textSize" format="dimension"/>
+        <attr name="exampleDrawable" format="color|reference"/>
+        <attr name="backgroundColor" format="color|reference"/>
+        <attr name="backgroundSelectedColor" format="color"/>
+        <attr name="text" format="string"/>
+        <attr name="textColor" format="color"/>
+    </declare-styleable>
+</resources>
