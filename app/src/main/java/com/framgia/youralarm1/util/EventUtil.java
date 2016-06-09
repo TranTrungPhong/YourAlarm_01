@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.framgia.youralarm1.R;
@@ -13,9 +15,17 @@ import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,21 +91,4 @@ public class EventUtil {
         dialog.show();
     }
 
-    public void insertEvent(ItemAlarm itemAlarm) {
-        //TODO add 1 Event vao google api calendar
-    }
-
-    public void deleteEvent(ItemAlarm itemAlarm) {
-        //TODO xoa 1 event tren calendar
-    }
-
-    public List<ItemAlarm> loadEvent() {
-        List<ItemAlarm> alarmList = new ArrayList<>();
-        //TODO load event tu calendar
-        return alarmList;
-    }
-
-    public void updateEvent(ItemAlarm itemAlarm) {
-        //TODO update ...
-    }
 }
