@@ -24,6 +24,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -33,9 +35,14 @@ import com.framgia.youralarm1.adapter.AlarmAdapter;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.data.MySqliteHelper;
 import com.framgia.youralarm1.models.ItemAlarm;
+import com.framgia.youralarm1.util.CreatEvent;
+import com.framgia.youralarm1.util.DeleteEvent;
 import com.framgia.youralarm1.util.EventTimeUtil;
 import com.framgia.youralarm1.util.EventUtil;
+import com.framgia.youralarm1.util.MakeRequestTask;
 import com.framgia.youralarm1.util.PreferenceUtil;
+import com.framgia.youralarm1.util.SyncEventFromServer;
+import com.framgia.youralarm1.util.UpdateEvent;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -274,7 +281,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDeletedAlarm(int position) {
         try {
-            new DeleteEvent(mCredential, mAlarmList.get(position)).execute();
+            new DeleteEvent(MainActivity.this, mCredential, mAlarmList.get(position)).execute();
             mMySqliteHelper.deleteAlarm(mAlarmList.get(position));
         } catch (SQLiteException e) {
             e.printStackTrace();
@@ -286,7 +293,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onChangedAlarm(int position) {
-        new UpdateEvent(mCredential, mAlarmList.get(position)).execute();
+        new UpdateEvent(MainActivity.this, mCredential, mAlarmList.get(position)).execute();
         try {
             updateAlarmDay(mAlarmList.get(position));
             if (mAlarmList.get(position).isStatus())
@@ -316,7 +323,7 @@ public class MainActivity extends AppCompatActivity
                                 if (mAlarmList.size() > 0)
                                     mRecyclerView.smoothScrollToPosition(mAlarmList.size() - 1);
                                 AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm);
-                                new CreatEvent(mCredential, itemAlarm).execute();
+                                new CreatEvent(MainActivity.this, mCredential, itemAlarm).execute();
                             } catch (SQLiteException e) {
                                 e.printStackTrace();
                             }
@@ -329,6 +336,7 @@ public class MainActivity extends AppCompatActivity
 
     private int addAlarmCache(ItemAlarm itemAlarm) throws SQLiteException {
         //TODO: Create schedule
+        String s = itemAlarm.getIdEvent();
         return (int) mMySqliteHelper.addAlarm(itemAlarm);
     }
 
@@ -380,106 +388,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
-        private com.google.api.services.calendar.Calendar mService = null;
-        private Exception mLastError = null;
-
-        public MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.calendar
-                    .Calendar.Builder(transport, jsonFactory, credential)
-                    .setApplicationName(getString(R.string.application_name))
-                    .build();
-        }
-
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-        private List<String> getDataFromApi() throws IOException {
-            DateTime now = new DateTime(System.currentTimeMillis() - Const.BEFORE_CURENT_TIME);
-            List<String> eventStrings = new ArrayList<String>();
-            Events events = mService.events().list(getString(R.string.primary))
-                    .setMaxResults(Const.COUNT_RESULT)
-                    .setTimeMin(now)
-                    .setOrderBy(getString(R.string.startTime))
-                    .setSingleEvents(true)
-                    .execute();
-            List<Event> items = events.getItems();
-
-            for (Event event : items) {
-                DateTime start = event.getStart().getDateTime();
-                if (start == null) {
-                    start = event.getStart().getDate();
-                }
-                eventStrings.add(String.format("%s (%s)", event.getSummary(), start));
-            }
-            return eventStrings;
-        }
-
-
-        @Override
-        protected void onPreExecute() {
-            if (mProgress != null && !mProgress.isShowing()) {
-                mProgress.setMessage(getString(R.string.calling_api));
-                mProgress.show();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-            if (mProgress != null && mProgress.isShowing()) {
-                mProgress.hide();
-            }
-            if (output == null || output.size() == 0) {
-                Toast.makeText(MainActivity.this, R.string.no_result, Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                mCalendarItems.clear();
-                mCalendarItems.addAll(output);
-                Toast.makeText(MainActivity.this,
-                        getString(R.string.size_event) + mCalendarItems.size(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            if (mProgress != null && mProgress.isShowing()) {
-                mProgress.hide();
-            }
-            if (mLastError != null) {
-                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    mEventUtil.showGooglePlayServicesAvailabilityErrorDialog(
-                            ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                    .getConnectionStatusCode());
-                } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    startActivityForResult(
-                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            Const.REQUEST_AUTHORIZATION);
-                } else {
-                    Toast.makeText(MainActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
-                            .show();
-                }
-            } else {
-                Toast.makeText(MainActivity.this, R.string.request_canclled, Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-    }
-
     private void checkAccount() {
         String result = mEventUtil.getResultsFromApi();
         if (result.equals(Const.ACCOUNT_SUCCESS)) {
-            new MakeRequestTask(mCredential).execute();
+            new MakeRequestTask(MainActivity.this, mCredential).execute();
         } else if (result.equals(Const.NO_INTERNET)) {
             Toast.makeText(this, R.string.no_network, Toast.LENGTH_SHORT).show();
         } else if (result.equals(Const.NO_ACCOUNT)) {
@@ -487,229 +399,22 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public class CreatEvent extends AsyncTask<String, String, String> {
-        private com.google.api.services.calendar.Calendar mService = null;
-        private ItemAlarm mItemAlarm;
-        private String mTimeEvent;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
 
-        public CreatEvent(GoogleAccountCredential credential, ItemAlarm itemAlarm) {
-            mItemAlarm = itemAlarm;
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.calendar.Calendar.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName(getResources().getString(R.string.application_name))
-                    .build();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            if (mProgress != null && !mProgress.isShowing()) {
-                mProgress.setMessage(getString(R.string.calling_api));
-                mProgress.show();
-            }
-            checkAccount();
-            EventTimeUtil eventTimeUtil = new EventTimeUtil();
-            mTimeEvent = eventTimeUtil.eventTime(mItemAlarm.getTime());
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            Event event = new Event()
-                    .setSummary(mItemAlarm.getTitle().toString());
-
-            DateTime startDateTime = new DateTime(mTimeEvent);
-            EventDateTime start = new EventDateTime()
-                    .setDateTime(startDateTime)
-                    .setTimeZone(getString(R.string.time_zone));
-            event.setStart(start);
-
-            DateTime endDateTime = new DateTime(mTimeEvent);
-            EventDateTime end = new EventDateTime()
-                    .setDateTime(endDateTime)
-                    .setTimeZone(getString(R.string.time_zone));
-            event.setEnd(end);
-            try {
-                event = mService.events().insert(getResources().getString(R.string.primary), event)
-                        .execute();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return event.getId().toString();
-        }
-
-        @Override
-        protected void onPostExecute(String aVoid) {
-            if (mProgress != null && mProgress.isShowing()) {
-                mProgress.hide();
-            }
-            if (aVoid == null) {
-                Toast.makeText(MainActivity.this, R.string.event_id_null, Toast.LENGTH_SHORT).show();
-            } else {
-                mItemAlarm.setIdEvent(aVoid);
-                mMySqliteHelper.updateAlarm(mItemAlarm);
-                new MakeRequestTask(mCredential).execute();
-            }
-        }
     }
 
-    private class DeleteEvent extends AsyncTask<Void, Void, String> {
-        private com.google.api.services.calendar.Calendar mService = null;
-        private ItemAlarm mItemAlarm;
-
-        public DeleteEvent(GoogleAccountCredential credential, ItemAlarm itemAlarm) {
-            mItemAlarm = itemAlarm;
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.calendar.Calendar.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName(getResources().getString(R.string.application_name))
-                    .build();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (mProgress != null && !mProgress.isShowing()) {
-                mProgress.setMessage(getString(R.string.delete_api));
-                mProgress.show();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        List<ItemAlarm> alarmList = mMySqliteHelper.getListAlarm();
+        if (item.getItemId() == R.id.action_sync) {
+            Toast.makeText(MainActivity.this, R.string.sync_server, Toast.LENGTH_SHORT).show();
+            for (ItemAlarm itemAlarm : alarmList) {
             }
+            new SyncEventFromServer(MainActivity.this, mCredential, alarmList).execute();
         }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            try {
-                mService.events().delete(getResources()
-                        .getString(R.string.primary), mItemAlarm.getIdEvent()).execute();
-                return Const.DELETE_SUCCESS;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return Const.DELETE_FAIL;
-        }
-
-        @Override
-        protected void onPostExecute(String aVoid) {
-            if (mProgress != null && mProgress.isShowing()) {
-                mProgress.hide();
-            }
-            if (aVoid.equals(Const.DELETE_SUCCESS)) {
-                new MakeRequestTask(mCredential).execute();
-            } else {
-                Toast.makeText(MainActivity.this, R.string.delete_fail, Toast.LENGTH_SHORT).show();
-            }
-        }
+        return super.onOptionsItemSelected(item);
     }
-
-    private class UpdateEvent extends AsyncTask<Void, Void, String> {
-        private com.google.api.services.calendar.Calendar mService = null;
-        private ItemAlarm mItemAlarm;
-        private List<String> mDaylist = new ArrayList<>();
-        private StringBuffer mByDay = new StringBuffer();
-
-        public UpdateEvent(GoogleAccountCredential credential, ItemAlarm itemAlarm) {
-            mItemAlarm = itemAlarm;
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.calendar.Calendar.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName(getResources().getString(R.string.application_name))
-                    .build();
-        }
-
-        private List<String> getRecurrence() {
-            List<String> listDay = new ArrayList<>();
-            if (mItemAlarm.getWeekDayHashMap().containsValue(true)) {
-                Iterator iterator = mItemAlarm.getWeekDayHashMap().entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry entry = (Map.Entry) iterator.next();
-                    if ((boolean) entry.getValue()) {
-                        int dayAlarm = ((ItemAlarm.WeekDay) entry.getKey()).dayNumber();
-                        switch (dayAlarm) {
-                            case 1:
-                                listDay.add(Const.SUNDAY);
-                                break;
-                            case 2:
-                                listDay.add(Const.MONDAY);
-                                break;
-                            case 3:
-                                listDay.add(Const.TUESDAY);
-                                break;
-                            case 4:
-                                listDay.add(Const.WENESDAY);
-                                break;
-                            case 5:
-                                listDay.add(Const.THIRDAY);
-                                break;
-                            case 6:
-                                listDay.add(Const.FRIDAY);
-                                break;
-                            case 7:
-                                listDay.add(Const.SATUDAY);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-            return listDay;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (mProgress != null && !mProgress.isShowing()) {
-                mProgress.setMessage(getString(R.string.update_api));
-                mProgress.show();
-            }
-            mDaylist = getRecurrence();
-            for (int i = 0; i < mDaylist.size(); i++) {
-                if (i < mDaylist.size() - 1) {
-                    mByDay.append(mDaylist.get(i).toString()).append(",");
-                } else {
-                    mByDay.append(mDaylist.get(i).toString());
-                }
-            }
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            try {
-                Event event = mService.events()
-                        .get(getResources().getString(R.string.primary), mItemAlarm.getIdEvent())
-                        .execute();
-                event.setSummary(mItemAlarm.getTitle().toString());
-                String s = mItemAlarm.getTitle().toString();
-                //             Lap event
-                if (mDaylist.size() != 0) {
-                    String[] recurrence = new String[]{
-                            getResources().getString(R.string.recurrence_update) + mByDay
-                    };
-                    event.setRecurrence(Arrays.asList(recurrence));
-                }
-                event = mService.events()
-                        .update(getResources().getString(R.string.primary), event.getId(), event)
-                        .execute();
-                return event.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String aVoid) {
-            if (mProgress != null && mProgress.isShowing()) {
-                mProgress.hide();
-            }
-            if (aVoid != null) {
-                new MakeRequestTask(mCredential).execute();
-            } else {
-                Toast.makeText(MainActivity.this, R.string.update_fail, Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
 }

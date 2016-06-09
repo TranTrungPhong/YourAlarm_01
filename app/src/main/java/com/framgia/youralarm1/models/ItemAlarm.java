@@ -39,7 +39,7 @@ public class ItemAlarm implements Serializable {
 
     public ItemAlarm() {
         mTime = 0;
-        mIdEvent = "";
+        mIdEvent = Const.DEFAULT_EVENT_ID;
         mStatus = true;
         mIsVibrate = true;
         mIsRingtone = true;
