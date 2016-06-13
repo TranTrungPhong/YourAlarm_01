@@ -2,5 +2,11 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#FF6E40</color>
+    <color name="color_text_button_day">#5C6BC0</color>
+    <color name="color_text_item_alarm">#FFFFFF</color>
+    <color name="color_background_button_day">#FFFFFFFF</color>
+    <color name="color_divider_item_alarm">#FF888888</color>
+    <color name="bg_item_alarm">#5C6BC0</color>
+    <color name="bg_item_alarm_selected">#8C9EFF</color>
 </resources>
