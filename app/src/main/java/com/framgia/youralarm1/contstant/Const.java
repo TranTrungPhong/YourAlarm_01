@@ -26,4 +26,10 @@ public class Const {
     public static final String NO_INTERNET = "no internet";
     public static final String NO_ACCOUNT = "no acount";
     public static final String ACCOUNT_SUCCESS = "account success";
+    public static final String ITEM_ALARM = "item_alarm";
+    public static final long RING_TIME = 60000;
+    public static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
+    public static final int ALARM_STATUS_ON = 1;
+    public static final long MINUTE_IN_MILIS = 60000;
+    public static final String ACTION_FULLSCREEN_ACTIVITY = "fullscreen_activity";
 }

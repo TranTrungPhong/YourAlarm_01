@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -120,6 +119,36 @@ public class MySqliteHelper extends SQLiteOpenHelper {
         List<ItemAlarm> alarmList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_ALARM, null, null, null, null, null, null);
+        if ( cursor.getCount() > 0 && cursor.moveToFirst() ) {
+            do {
+                ItemAlarm itemAlarm = new ItemAlarm();
+                itemAlarm.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
+                itemAlarm.setTime(cursor.getInt(cursor.getColumnIndex(COLUMN_TIME)));
+                itemAlarm.setStatus(cursor.getInt(cursor.getColumnIndex(COLUMN_STATUS)) == 1);
+                itemAlarm.setVibrate(cursor.getInt(cursor.getColumnIndex(COLUMN_IS_VIBRATE)) == 1);
+                itemAlarm.setRingtone(
+                        cursor.getInt(cursor.getColumnIndex(COLUMN_IS_RINGTONE)) == 1);
+                itemAlarm.setTitle(cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)));
+                itemAlarm.setRingTonePath(
+                        cursor.getString(cursor.getColumnIndex(COLUMN_RINGTONE_PATH)));
+                Type type = new TypeToken<HashMap<ItemAlarm.WeekDay, Boolean>>() {}.getType();
+                itemAlarm.setWeekDayHashMap(
+                        (HashMap<ItemAlarm.WeekDay, Boolean>) new Gson().fromJson(
+                                cursor.getString(cursor.getColumnIndex(COLUMN_WEEKDAY)), type));
+                alarmList.add(itemAlarm);
+            }
+            while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return alarmList;
+    }
+
+    public List<ItemAlarm> getListAlarmByStatus(String status) {
+        List<ItemAlarm> alarmList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_ALARM, null, COLUMN_STATUS + "=?", new String[]{status},
+                                 null, null, COLUMN_TIME + " ASC");
         if ( cursor.getCount() > 0 && cursor.moveToFirst() ) {
             do {
                 ItemAlarm itemAlarm = new ItemAlarm();

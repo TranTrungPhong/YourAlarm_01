@@ -29,6 +29,28 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+        <receiver
+            android:name=".broadcast.AlarmBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".broadcast.AlarmReceiver">
+        </receiver>
+
+        <service android:name=".service.SchedulingService">
+        </service>
+
+        <activity
+            android:name=".activity.AlertAlarmActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
+            android:label="@string/title_activity_alert_alarm"
+            android:taskAffinity=""
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:excludeFromRecents="true"
+            android:showOnLockScreen="true">
+        </activity>
     </application>
 
 </manifest>
