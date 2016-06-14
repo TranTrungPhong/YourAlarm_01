@@ -9,4 +9,5 @@
     <color name="color_divider_item_alarm">#FF888888</color>
     <color name="bg_item_alarm">#5C6BC0</color>
     <color name="bg_item_alarm_selected">#8C9EFF</color>
+    <color name="colorIcon">#fefffe</color>
 </resources>
