@@ -40,6 +40,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
 import java.io.IOException;
+import com.framgia.youralarm1.utils.AlarmUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -182,6 +183,8 @@ public class MainActivity extends AppCompatActivity
         mAlarmAdapter.notifyDataSetChanged();
         try {
             updateAlarmDay(itemAlarm);
+            if(itemAlarm.isStatus())
+                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm);
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
@@ -194,6 +197,7 @@ public class MainActivity extends AppCompatActivity
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
+        AlarmUtils.cancelAlarm(MainActivity.this, mAlarmList.get(position));
         mAlarmList.remove(position);
         mAlarmAdapter.notifyDataSetChanged();
     }
@@ -202,6 +206,8 @@ public class MainActivity extends AppCompatActivity
     public void onChangedAlarm(int position) {
         try {
             updateAlarmDay(mAlarmList.get(position));
+            if(mAlarmList.get(position).isStatus())
+                AlarmUtils.setNextAlarm(MainActivity.this, mAlarmList.get(position));
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
@@ -226,6 +232,7 @@ public class MainActivity extends AppCompatActivity
                                 mAlarmAdapter.notifyDataSetChanged();
                                 if (mAlarmList.size() > 0)
                                     mRecyclerView.smoothScrollToPosition(mAlarmList.size() - 1);
+                                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm);
                             } catch (SQLiteException e) {
                                 e.printStackTrace();
                             }
