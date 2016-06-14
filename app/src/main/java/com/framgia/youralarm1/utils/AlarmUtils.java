@@ -95,6 +95,7 @@ public class AlarmUtils {
     }
 
     public static void setSnoozeAlarm(Context context, ItemAlarm itemAlarm, long snoozeTime) {
+        NotificationUtils.cancelNotification(context, itemAlarm);
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, AlarmReceiver.class);
         Bundle bundle = new Bundle();

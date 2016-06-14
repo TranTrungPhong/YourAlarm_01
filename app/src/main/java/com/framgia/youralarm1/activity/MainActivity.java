@@ -4,13 +4,21 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteException;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -66,6 +74,15 @@ public class MainActivity extends AppCompatActivity
     private PreferenceUtil mPreferenceUtil;
     private ProgressDialog mProgress;
     private List<String> mCalendarItems = new ArrayList<>();
+    private String[] mArrPermission = new String[]{Manifest.permission.GET_ACCOUNTS};
+    private int[] mArrRequestCode = new int[]{Const.MY_PERMISSION_REQUEST_GET_ACCOUNTS};
+
+    private BroadcastReceiver mInvalidDataReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateListAlarm();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +95,24 @@ public class MainActivity extends AppCompatActivity
         mPreferenceUtil = new PreferenceUtil(MainActivity.this);
         setView();
         setEvent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setPermission(mArrPermission, mArrRequestCode);
+        }
+    }
+
+    private void setPermission(String[] permissions, int[] requestCode) {
+        //TODO: check Vibrate permission
+        for (int i = 0; i < permissions.length; i++) {
+
+            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                                                  permissions[i])
+                    != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{permissions[i]},
+                                                      requestCode[i]);
+            } else {
+                Log.d(TAG, permissions[i]);
+            }
+        }
     }
 
     private void setView() {
@@ -90,7 +125,11 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         mAlarmList = new ArrayList<>();
         mMySqliteHelper = new MySqliteHelper(this);
-        mAlarmList.addAll(mMySqliteHelper.getListAlarm());
+        try {
+            mAlarmList.addAll(mMySqliteHelper.getListAlarm());
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
         mAlarmAdapter = new AlarmAdapter(MainActivity.this, mAlarmList);
         mRecyclerView.setAdapter(mAlarmAdapter);
         checkAccount();
@@ -100,9 +139,24 @@ public class MainActivity extends AppCompatActivity
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    setPermission(mArrPermission, mArrRequestCode);
+                }
                 addAlarm();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mInvalidDataReceiver, new IntentFilter(Const.ACTION_UPDATE_DATA));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mInvalidDataReceiver);
     }
 
     @Override
@@ -148,6 +202,25 @@ public class MainActivity extends AppCompatActivity
             } else {
                 checkAccount();
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case Const.MY_PERMISSION_REQUEST_GET_ACCOUNTS:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, getString(R.string.permission_get_account_ok));
+                } else {
+                    Toast.makeText(MainActivity.this,
+                                   getString(R.string.permission_get_account_failed),
+                                   Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, getString(R.string.permission_get_account_failed));
+                }
+                return;
         }
     }
 
@@ -239,7 +312,7 @@ public class MainActivity extends AppCompatActivity
 
                         }
                     }
-                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false);
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE) + 1, false);
         timePickerDialog.show();
     }
 
@@ -251,6 +324,16 @@ public class MainActivity extends AppCompatActivity
     private void updateAlarmDay(ItemAlarm itemAlarm) throws SQLiteException {
         //TODO: Update schedule
         mMySqliteHelper.updateAlarm(itemAlarm);
+    }
+
+    private void updateListAlarm() {
+        try {
+            mAlarmList.clear();
+            mAlarmList.addAll(mMySqliteHelper.getListAlarm());
+            mAlarmAdapter.notifyDataSetChanged();
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package com.framgia.youralarm1.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
@@ -16,6 +17,7 @@ import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.data.MySqliteHelper;
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.framgia.youralarm1.utils.AlarmUtils;
+import com.framgia.youralarm1.utils.NotificationUtils;
 import com.framgia.youralarm1.widget.CircularButton;
 import java.io.IOException;
 
@@ -48,8 +50,27 @@ public class AlertAlarmActivity extends AppCompatActivity
         setContentView(R.layout.activity_alert_alarm);
         setView();
         setData();
+        setAction();
 
+    }
 
+    private void setAction() {
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        switch (action){
+            case Const.ACTION_SNOOZE_ALARM:
+                onSnoozeAlarm();
+                break;
+            case Const.ACTION_DISMISS_ALARM:
+                onDismissAlarm();
+                break;
+            case Const.ACTION_FULLSCREEN_ACTIVITY:
+                playRingAndVibrate();
+                break;
+            default:
+                playRingAndVibrate();
+                break;
+        }
     }
 
     private void setData() {
@@ -74,17 +95,20 @@ public class AlertAlarmActivity extends AppCompatActivity
             @Override
             public void onFinish() {
                 AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
+                updateWhenAppOpenning();
                 finish();
             }
         };
-        playRingAndVibrate();
-
     }
 
     private void playRingAndVibrate() {
         mCountDownTimer.start();
         if (vibrator.hasVibrator()) {
-            vibrator.vibrate(new long[]{500, 500}, (int) (Const.RING_TIME / 1000));
+            try {
+                vibrator.vibrate(new long[]{500, 500}, 0);
+            } catch (ArrayIndexOutOfBoundsException e){
+                e.printStackTrace();
+            }
         }
         Uri ringtoneUri;
         if (itemAlarm.getRingTonePath() != null) {
@@ -127,20 +151,36 @@ public class AlertAlarmActivity extends AppCompatActivity
     public void onClickInteractionListener(View view, int id, boolean isSelected) {
         switch (view.getId()) {
             case R.id.circle_button_dismiss:
-                MySqliteHelper mySqliteHelper = new MySqliteHelper(AlertAlarmActivity.this);
-                itemAlarm.setStatus(false);
-                mySqliteHelper.updateAlarm(itemAlarm);
-                mCountDownTimer.cancel();
-                AlarmUtils.cancelAlarm(AlertAlarmActivity.this, itemAlarm);
-                finish();
+                onDismissAlarm();
                 break;
             case R.id.circle_button_snooze:
-                mCountDownTimer.cancel();
-                AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
-                finish();
+                onSnoozeAlarm();
                 break;
         }
     }
+
+    private void onDismissAlarm() {
+        MySqliteHelper mySqliteHelper = new MySqliteHelper(AlertAlarmActivity.this);
+        itemAlarm.setStatus(false);
+        mySqliteHelper.updateAlarm(itemAlarm);
+        mCountDownTimer.cancel();
+        AlarmUtils.cancelAlarm(AlertAlarmActivity.this, itemAlarm);
+        updateWhenAppOpenning();
+        finish();
+    }
+
+    private void onSnoozeAlarm() {
+        mCountDownTimer.cancel();
+        AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
+        updateWhenAppOpenning();
+        finish();
+    }
+
+    private void updateWhenAppOpenning(){
+        Intent mainIntent = new Intent(Const.ACTION_UPDATE_DATA);
+        sendBroadcast(mainIntent);
+    }
+
 
     @Override
     protected void onDestroy() {
