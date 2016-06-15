@@ -1,5 +1,7 @@
 package com.framgia.youralarm1.models;
+
 import com.framgia.youralarm1.contstant.Const;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,11 +19,14 @@ public class ItemAlarm implements Serializable {
         WeekDay(int i) {
             this.mDayNumber = i;
         }
+
         public int dayNumber() {
             return mDayNumber;
         }
     }
+
     private int mId;
+    private String mIdEvent;
     private int mTime;
     private boolean mStatus;
     private boolean mIsVibrate;
@@ -34,6 +39,7 @@ public class ItemAlarm implements Serializable {
 
     public ItemAlarm() {
         mTime = 0;
+        mIdEvent = "";
         mStatus = true;
         mIsVibrate = true;
         mIsRingtone = true;
@@ -64,6 +70,14 @@ public class ItemAlarm implements Serializable {
 
     public void setId(int id) {
         mId = id;
+    }
+
+    public String getIdEvent() {
+        return mIdEvent;
+    }
+
+    public void setIdEvent(String mIdEvent) {
+        this.mIdEvent = mIdEvent;
     }
 
     public int getTime() {
