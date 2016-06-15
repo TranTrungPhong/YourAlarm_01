@@ -12,21 +12,23 @@ import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.contstant.Const;
-import com.framgia.youralarm1.data.MySqliteHelper;
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.framgia.youralarm1.utils.AlarmUtils;
-import com.framgia.youralarm1.utils.NotificationUtils;
-import com.framgia.youralarm1.widget.CircularButton;
+import com.framgia.youralarm1.utils.ParseTimeUtils;
+import com.framgia.youralarm1.widget.SlideButton;
 import java.io.IOException;
 
 public class AlertAlarmActivity extends AppCompatActivity
-        implements CircularButton.OnClickInteractionListener {
+        implements SlideButton.OnSlideListener {
     private static final String TAG = AlertAlarmActivity.class.getName();
     private static final long SNOOZE_TIME = 60000;
-    private CircularButton mCircularButtonDismiss;
-    private CircularButton mCircularButtonSnooze;
+    private TextView mTextTitle;
+    private TextView mTextTime;
+    private SlideButton mSlideButtonAlarm;
     private ItemAlarm itemAlarm;
     private MediaPlayer mMediaPlayer;
     private Vibrator vibrator;
@@ -50,9 +52,26 @@ public class AlertAlarmActivity extends AppCompatActivity
         setContentView(R.layout.activity_alert_alarm);
         setView();
         setData();
+        setEvent();
         setAction();
 
     }
+
+    @Override
+    public void onSlideListener(View view, int swipedSide) {
+        switch (swipedSide) {
+            case SlideButton.SLIDE_LEFT:
+                onSnoozeAlarm();
+                break;
+            case SlideButton.SLIDE_RIGHT:
+                onDismissAlarm();
+                break;
+            default:
+                break;
+        }
+    }
+
+
 
     private void setAction() {
         Intent intent = getIntent();
@@ -73,6 +92,10 @@ public class AlertAlarmActivity extends AppCompatActivity
         }
     }
 
+    private void setEvent() {
+        mSlideButtonAlarm.setOnSlideListener(this);
+    }
+
     private void setData() {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null)
@@ -80,12 +103,14 @@ public class AlertAlarmActivity extends AppCompatActivity
         if (itemAlarm != null) {
             if (itemAlarm.getWeekDayHashMap().containsValue(true)) {
                 //TODO: set the next time alarm;
-                AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm);
+                AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true);
             }
+            mTextTitle.setText(itemAlarm.getTitle());
+            mTextTime.setText(ParseTimeUtils.formatTextTime(itemAlarm.getTime()));
         }
+
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-
         mCountDownTimer = new CountDownTimer(Const.RING_TIME, Const.RING_TIME) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -141,30 +166,14 @@ public class AlertAlarmActivity extends AppCompatActivity
     }
 
     private void setView() {
-        mCircularButtonDismiss = (CircularButton) findViewById(R.id.circle_button_dismiss);
-        mCircularButtonDismiss.setOnClickInteractionListener(this);
-        mCircularButtonSnooze = (CircularButton) findViewById(R.id.circle_button_snooze);
-        mCircularButtonSnooze.setOnClickInteractionListener(this);
-    }
-
-    @Override
-    public void onClickInteractionListener(View view, int id, boolean isSelected) {
-        switch (view.getId()) {
-            case R.id.circle_button_dismiss:
-                onDismissAlarm();
-                break;
-            case R.id.circle_button_snooze:
-                onSnoozeAlarm();
-                break;
-        }
+        mSlideButtonAlarm = (SlideButton) findViewById(R.id.slidebutton_alarm);
+        mTextTitle = (TextView) findViewById(R.id.text_time_alarm);
+        mTextTime = (TextView) findViewById(R.id.text_time_alarm);
     }
 
     private void onDismissAlarm() {
-        MySqliteHelper mySqliteHelper = new MySqliteHelper(AlertAlarmActivity.this);
-        itemAlarm.setStatus(false);
-        mySqliteHelper.updateAlarm(itemAlarm);
+        AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true);
         mCountDownTimer.cancel();
-        AlarmUtils.cancelAlarm(AlertAlarmActivity.this, itemAlarm);
         updateWhenAppOpenning();
         finish();
     }
@@ -180,7 +189,6 @@ public class AlertAlarmActivity extends AppCompatActivity
         Intent mainIntent = new Intent(Const.ACTION_UPDATE_DATA);
         sendBroadcast(mainIntent);
     }
-
 
     @Override
     protected void onDestroy() {

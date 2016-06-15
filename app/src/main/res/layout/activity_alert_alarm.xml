@@ -21,9 +21,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/abc_action_bar_default_height_material"
         android:gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:layout_marginBottom="@dimen/abc_action_bar_default_height_material">
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/text_time_alarm"
@@ -36,59 +36,50 @@
             android:textColor="@color/color_text_item_alarm"
             android:textSize="@dimen/abc_text_size_display_3_material"/>
 
-        <TextView
-            android:id="@+id/text_time_format"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center_horizontal"
-            android:layout_toEndOf="@+id/text_time_alarm"
-            android:layout_toRightOf="@+id/text_time_alarm"
-            android:gravity="center"
-            android:text="@string/time_format_sample"
-            android:textColor="@color/color_text_item_alarm"
-            android:textSize="@dimen/abc_text_size_display_1_material"/>
+
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <com.framgia.youralarm1.widget.CircularButton
-            android:id="@+id/circle_button_snooze"
-            android:layout_width="0dp"
-            android:layout_height="@android:dimen/notification_large_icon_height"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            app:backgroundSelectedColor="@color/color_background_button_day"
-            app:text="@string/sunday_short"
-            app:textColor="@color/color_text_button_day"
-            app:textSize="@dimen/text_size_button_day"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/abc_action_bar_default_height_material"
+            android:layout_centerInParent="true"
+            android:background="@drawable/bg_slide_button">
 
-        <com.framgia.youralarm1.widget.CircularButton
-            android:id="@+id/circle_button_alarm"
-            android:layout_width="0dp"
-            android:layout_height="@android:dimen/notification_large_icon_height"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            android:nestedScrollingEnabled="false"
-            app:backgroundSelectedColor="@color/color_background_button_day"
-            app:text="@string/sunday_short"
-            app:textColor="@color/color_text_button_day"
-            app:textSize="@dimen/text_size_button_day"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/margin_15"
+                android:text="@string/snooze_title"
+                android:textColor="@color/color_text_item_alarm"
+                android:textSize="@dimen/abc_text_size_medium_material"/>
 
-        <com.framgia.youralarm1.widget.CircularButton
-            android:id="@+id/circle_button_dismiss"
-            android:layout_width="0dp"
-            android:layout_height="@android:dimen/notification_large_icon_height"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:layout_weight="1"
-            app:backgroundSelectedColor="@color/color_background_button_day"
-            app:text="@string/sunday_short"
-            app:textColor="@color/color_text_button_day"
-            app:textSize="@dimen/text_size_button_day"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="@dimen/margin_15"
+                android:text="@string/dismiss_title"
+                android:textColor="@color/color_text_item_alarm"
+                android:textSize="@dimen/abc_text_size_medium_material"/>
 
-    </LinearLayout>
+        </RelativeLayout>
+
+        <com.framgia.youralarm1.widget.SlideButton
+            android:id="@+id/slidebutton_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/abc_action_bar_default_height_material"
+            android:layout_centerInParent="true"
+            app:slide_buttonColor="@color/color_button_slide"
+            app:slide_buttonSelectedColor="@color/color_button_slide_selected"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

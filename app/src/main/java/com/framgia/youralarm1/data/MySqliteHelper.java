@@ -228,4 +228,20 @@ public class MySqliteHelper extends SQLiteOpenHelper {
         return count;
     }
 
+    public boolean haveAlarm(ItemAlarm itemAlarm) throws SQLiteException {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor =
+                db.query(TABLE_ALARM, null, COLUMN_ID + " = ?",
+                         new String[]{String.valueOf(itemAlarm.getId())},
+                         null, null, null);
+        int count = cursor.getCount();
+        if (cursor != null)
+            cursor.close();
+        db.close();
+        if (count > 0) {
+            return true;
+        } else
+            return false;
+    }
+
 }

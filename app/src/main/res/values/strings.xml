@@ -53,4 +53,10 @@
     <string name="sync_server">Synchronize events from google API Calendar</string>
     <string name="syn_fails">Synchronize fail !</string>
     <string name="syn_success">Synchronize success !</string>
+    <string name="event_id_null">Event ID null !</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="repeat">Repeat</string>
+
 </resources>

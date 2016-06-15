@@ -10,4 +10,8 @@
     <color name="bg_item_alarm">#5C6BC0</color>
     <color name="bg_item_alarm_selected">#8C9EFF</color>
     <color name="colorIcon">#fefffe</color>
+    <color name="color_start_slide">#FF6E40</color>
+    <color name="color_end_slide">#016610</color>
+    <color name="color_button_slide">#FFFFFF</color>
+    <color name="color_button_slide_selected">#E0E0E0</color>
 </resources>

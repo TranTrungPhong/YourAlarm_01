@@ -272,7 +272,7 @@ public class MainActivity extends AppCompatActivity
         try {
             updateAlarmDay(itemAlarm);
             if (itemAlarm.isStatus())
-                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm);
+                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm, false);
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
@@ -297,7 +297,7 @@ public class MainActivity extends AppCompatActivity
         try {
             updateAlarmDay(mAlarmList.get(position));
             if (mAlarmList.get(position).isStatus())
-                AlarmUtils.setNextAlarm(MainActivity.this, mAlarmList.get(position));
+                AlarmUtils.setNextAlarm(MainActivity.this, mAlarmList.get(position), false);
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
@@ -322,8 +322,8 @@ public class MainActivity extends AppCompatActivity
                                 mAlarmAdapter.notifyDataSetChanged();
                                 if (mAlarmList.size() > 0)
                                     mRecyclerView.smoothScrollToPosition(mAlarmList.size() - 1);
-                                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm);
                                 new CreatEvent(MainActivity.this, mCredential, itemAlarm).execute();
+                                AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm, false);
                             } catch (SQLiteException e) {
                                 e.printStackTrace();
                             }
