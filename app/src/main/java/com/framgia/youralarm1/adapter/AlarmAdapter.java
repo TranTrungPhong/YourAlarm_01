@@ -128,10 +128,10 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
 
     private void setEvent(final ViewHolder holder, final int position) {
         holder.mSwitchCompat.setOnCheckedChangeListener(this);
+        holder.mTextTime.setOnClickListener(this);
         if ( holder.mItemAlarm.isExpand() ) {
             holder.mCheckBoxRepeat.setOnCheckedChangeListener(this);
             holder.mCheckBoxVibrate.setOnCheckedChangeListener(this);
-            holder.mTextTime.setOnClickListener(this);
             holder.mTextSelectRingtone.setOnClickListener(this);
             holder.mCircularButtonSunday.setOnClickInteractionListener(this);
             holder.mCircularButtonMonday.setOnClickInteractionListener(this);

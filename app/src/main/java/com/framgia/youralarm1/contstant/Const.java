@@ -1,12 +1,13 @@
 package com.framgia.youralarm1.contstant;
 
+import android.content.Intent;
 import com.google.api.services.calendar.CalendarScopes;
 
 /**
  * Created by vuduychuong1994 on 6/3/16.
  */
 public class Const {
-    public static final int MY_PERMISSIONS_REQUEST_VIBRATE = 234;
+    public static final int MY_PERMISSION_REQUEST_GET_ACCOUNTS = 241;
     public static final String DEFAULT = " (Default)";
     public static final int CHOOSE_RINGTONE_REQUEST = 333;
     public static final String DEFAUL_TITLE = "Title";
@@ -32,4 +33,9 @@ public class Const {
     public static final int ALARM_STATUS_ON = 1;
     public static final long MINUTE_IN_MILIS = 60000;
     public static final String ACTION_FULLSCREEN_ACTIVITY = "fullscreen_activity";
+    public static final int REQUEST_CODE_SNOOZE = 1;
+    public static final int REQUEST_CODE_DISMISS = 2;
+    public static final String ACTION_SNOOZE_ALARM = "ACTION_SNOOZE_ALARM";
+    public static final String ACTION_DISMISS_ALARM = "ACTION_DISMISS_ALARM";
+    public static final String ACTION_UPDATE_DATA = "ACTION_UPDATE_DATA";
 }

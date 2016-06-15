@@ -75,7 +75,7 @@ public class EventUtil {
             final int connectionStatusCode) {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(
-                (MainActivity) mContext.getApplicationContext(),
+                (MainActivity) mContext,
                 connectionStatusCode,
                 Const.REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
