@@ -30,13 +30,13 @@ public class NotificationUtils {
         Resources resources = context.getResources();
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.alarm)
-                .setContentTitle(resources.getString(R.string.app_name))
+                .setContentTitle(itemAlarm.getTitle())
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(itemAlarm.getTitle()))
                 .setPriority(Notification.PRIORITY_MAX)
                 .setAutoCancel(true)
                 .setWhen(0)
                 .setCategory(Notification.CATEGORY_ALARM)
-                .setContentText(itemAlarm.getTitle());
+                .setContentText(ParseTimeUtils.formatTextTime(itemAlarm.getTime()));
 
         Bundle bundle = new Bundle();
         bundle.putSerializable(Const.ITEM_ALARM, itemAlarm);

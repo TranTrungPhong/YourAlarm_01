@@ -4,20 +4,20 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +25,8 @@ import android.widget.TimePicker;
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.models.ItemAlarm;
+import com.framgia.youralarm1.utils.AlarmUtils;
+import com.framgia.youralarm1.utils.ParseTimeUtils;
 import com.framgia.youralarm1.widget.CircularButton;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +65,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mView.setTag(position);
+        holder.mLayoutParent.setTag(position);
         holder.mItemAlarm = mAlarmList.get(position);
         CircularButton[] arrCircularButton
                 = new CircularButton[]{holder.mCircularButtonSunday,
@@ -77,11 +80,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
         holder.mImageActionDelete.setTag(position);
         holder.mImageExpandItem.setTag(position);
         holder.mSwitchCompat.setTag(position);
-        holder.mCheckBoxRepeat.setTag(position);
         holder.mCheckBoxVibrate.setTag(position);
+        holder.mTextTitle.setTag(position);
 
         ItemAlarm itemAlarm = mAlarmList.get(position);
-        holder.mTextTime.setText(formatTextTime(itemAlarm.getTime()));
+        holder.mTextTime.setText(ParseTimeUtils.formatTextTime(itemAlarm.getTime()));
         holder.mSwitchCompat.setChecked(itemAlarm.isStatus());
 
         if (itemAlarm.isExpand()) {
@@ -107,7 +110,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
             }
             holder.mTextSelectRingtone.setText(ringToneName);
             holder.mCheckBoxVibrate.setChecked(itemAlarm.isVibrate());
-            holder.mEditTitle.setText(itemAlarm.getTitle());
+            holder.mTextTitle.setText(itemAlarm.getTitle());
         } else {
             if (holder.mLayoutExpand.getVisibility() == View.VISIBLE)
                 setCollapse(holder, true);
@@ -130,7 +133,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
         holder.mSwitchCompat.setOnCheckedChangeListener(this);
         holder.mTextTime.setOnClickListener(this);
         if ( holder.mItemAlarm.isExpand() ) {
-            holder.mCheckBoxRepeat.setOnCheckedChangeListener(this);
             holder.mCheckBoxVibrate.setOnCheckedChangeListener(this);
             holder.mTextSelectRingtone.setOnClickListener(this);
             holder.mCircularButtonSunday.setOnClickInteractionListener(this);
@@ -141,24 +143,10 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
             holder.mCircularButtonFriday.setOnClickInteractionListener(this);
             holder.mCircularButtonSaturday.setOnClickInteractionListener(this);
             holder.mImageActionDelete.setOnClickListener(this);
-            holder.mEditTitle.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    holder.mItemAlarm.setTitle(s.toString());
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    mOnAdapterInterActionListener.onChangedAlarm(position);
-                }
-            });
+            holder.mTextTitle.setOnClickListener(this);
         }
         holder.mImageExpandItem.setOnClickListener(this);
+        holder.mLayoutParent.setOnClickListener(this);
     }
 
     private void selectedView(int position) {
@@ -241,13 +229,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
         return animator;
     }
 
-    private String formatTextTime(int time) {
-        return new StringBuilder().append( time / 60 < 10 ? 0 : "" )
-                                .append( time / 60 + ":" )
-                                .append( time % 60 < 10 ? 0 : "" )
-                                .append( time % 60 ).toString();
-    }
-
 
     @Override
     public int getItemCount() {
@@ -272,7 +253,8 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                                 if (view.isShown()) {
-                                    ((TextView) v).setText(formatTextTime(hourOfDay * 60 + minute));
+                                    ((TextView) v).setText(ParseTimeUtils.
+                                            formatTextTime(hourOfDay * 60 + minute));
                                     mAlarmList.get(position).setTime(hourOfDay * 60 + minute);
                                     mOnAdapterInterActionListener.onChangedAlarm(position);
                                 }
@@ -301,6 +283,9 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 ((Activity) mContext).startActivityForResult(intent,
                                                              Const.CHOOSE_RINGTONE_REQUEST);
                 break;
+            case R.id.text_title:
+                openDialogToEditTitle(v, position);
+                break;
             case R.id.image_expand_item:
                 isClickExpand = true;
                 selectedView(position);
@@ -308,9 +293,52 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
             case R.id.image_action_delete:
                 mOnAdapterInterActionListener.onDeletedAlarm(position);
                 break;
+            case R.id.layout_parent:
+                isClickExpand = true;
+                selectedView(position);
+                break;
             default:
                 break;
         }
+    }
+
+    private void openDialogToEditTitle(final View v, final int position) {
+        final ItemAlarm itemAlarm = mAlarmList.get(position);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+        alertDialog.setTitle(R.string.title);
+        alertDialog.setMessage(R.string.enter_title);
+
+        final EditText input = new EditText(mContext);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        input.setText(itemAlarm.getTitle());
+        input.setSelection(input.getText().length());
+        alertDialog.setView(input);
+        alertDialog.setIcon(R.drawable.alarm);
+        //TODO: Set action for alert dialog
+        alertDialog.setPositiveButton(mContext.getString(R.string.ok),
+                                      new DialogInterface.OnClickListener() {
+                                          public void onClick(DialogInterface dialog, int which) {
+                                              String tempTitle = input.getText().toString();
+                                              if (!tempTitle.equals(itemAlarm.getTitle())) {
+                                                  itemAlarm.setTitle(tempTitle);
+                                                  ((TextView) v).setText(tempTitle);
+                                                  mOnAdapterInterActionListener.onChangedAlarm(position);
+
+                                              }
+                                          }
+                                      });
+
+        alertDialog.setNegativeButton(mContext.getString(R.string.cancel),
+                                      new DialogInterface.OnClickListener() {
+                                          public void onClick(DialogInterface dialog, int which) {
+                                              dialog.cancel();
+                                          }
+                                      });
+
+        alertDialog.show();
     }
 
     @Override
@@ -324,16 +352,19 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 break;
             case R.id.switch_status:
                 itemAlarm.setStatus(isChecked);
-                mOnAdapterInterActionListener.onChangedAlarm(position);
+                if (itemAlarm.isStatus())
+                    mOnAdapterInterActionListener.onChangedAlarm(position);
+                else
+                    AlarmUtils.cancelAlarm(mContext, itemAlarm);
                 break;
         }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public View mView;
+        public LinearLayout mLayoutParent;
         public AppCompatTextView mTextTime;
         public SwitchCompat mSwitchCompat;
-        public AppCompatCheckBox mCheckBoxRepeat;
         public CircularButton mCircularButtonSunday;
         public CircularButton mCircularButtonMonday;
         public CircularButton mCircularButtonTuesday;
@@ -343,7 +374,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
         public CircularButton mCircularButtonSaturday;
         public AppCompatTextView mTextSelectRingtone;
         public AppCompatCheckBox mCheckBoxVibrate;
-        public TextInputEditText mEditTitle;
+        public TextView mTextTitle;
         public AppCompatTextView mTextTitleCollapse;
         public LinearLayout mLayoutExpand;
         public ImageView mImageActionDelete;
@@ -357,9 +388,9 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
 
         }
         private void setView(View view) {
+            mLayoutParent = (LinearLayout) view.findViewById(R.id.layout_parent);
             mTextTime = (AppCompatTextView) view.findViewById(R.id.text_time);
             mSwitchCompat = (SwitchCompat) view.findViewById(R.id.switch_status);
-            mCheckBoxRepeat = (AppCompatCheckBox) view.findViewById(R.id.checkbox_repeat);
             mCircularButtonSunday = (CircularButton) view.findViewById(R.id.circle_button_sunday);
             mCircularButtonMonday = (CircularButton) view.findViewById(R.id.circle_button_monday);
             mCircularButtonTuesday = (CircularButton) view.findViewById(R.id.circle_button_tuesday);
@@ -372,7 +403,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                     (CircularButton) view.findViewById(R.id.circle_button_saturday);
             mTextSelectRingtone = (AppCompatTextView) view.findViewById(R.id.text_select_ringtone);
             mCheckBoxVibrate = (AppCompatCheckBox) view.findViewById(R.id.checkbox_vibrate);
-            mEditTitle = (TextInputEditText) view.findViewById(R.id.edit_title);
+            mTextTitle = (TextView) view.findViewById(R.id.text_title);
             mTextTitleCollapse = (AppCompatTextView) view.findViewById(R.id.text_title_collapse);
             mLayoutExpand = (LinearLayout) view.findViewById(R.id.layout_expand);
             mImageActionDelete = (ImageView) view.findViewById(R.id.image_action_delete);

@@ -3,6 +3,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.widget.Toast;
 import com.framgia.youralarm1.R;
@@ -58,7 +59,7 @@ public class AlarmUtils {
         }
     }
 
-    public static void setNextAlarm(Context context, ItemAlarm itemAlarm) {
+    public static void setNextAlarm(Context context, ItemAlarm itemAlarm, boolean isRinging) {
         int numdayNext = 0;
         int today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if(itemAlarm.getWeekDayHashMap().containsValue(true)) {
@@ -77,6 +78,13 @@ public class AlarmUtils {
                     }
                 }
             }
+        } else {
+            if (isRinging) {
+                Calendar calendar = Calendar.getInstance(Locale.getDefault());
+                int nowTime = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
+                if (nowTime > itemAlarm.getTime())
+                    itemAlarm.setStatus(false);
+            }
         }
         setAlarm(context, itemAlarm, numdayNext);
     }
@@ -92,6 +100,13 @@ public class AlarmUtils {
         manager.cancel(alarm);
         NotificationUtils.cancelNotification(context, itemAlarm);
         Toast.makeText(context, R.string.alarm_cancel, Toast.LENGTH_SHORT).show();
+        MySqliteHelper mySqliteHelper = new MySqliteHelper(context);
+        try {
+            if (mySqliteHelper.haveAlarm(itemAlarm))
+                mySqliteHelper.updateAlarm(itemAlarm);
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void setSnoozeAlarm(Context context, ItemAlarm itemAlarm, long snoozeTime) {
@@ -118,6 +133,4 @@ public class AlarmUtils {
         alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis() + (count + 1) * snoozeTime,
                      alarmIntent);
     }
-
-
 }

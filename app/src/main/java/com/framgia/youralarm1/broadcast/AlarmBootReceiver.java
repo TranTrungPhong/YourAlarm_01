@@ -28,7 +28,7 @@ public class AlarmBootReceiver extends BroadcastReceiver {
         List<ItemAlarm> alarmList
                 = mySqliteHelper.getListAlarmByStatus(String.valueOf(Const.ALARM_STATUS_ON));
         for (ItemAlarm itemAlarm : alarmList) {
-            AlarmUtils.setNextAlarm(context, itemAlarm);
+            AlarmUtils.setNextAlarm(context, itemAlarm, false);
         }
     }
 }

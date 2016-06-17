@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SlideButton">
+        <attr name="slide_drawable" format="color|reference"/>
+        <attr name="slide_buttonColor" format="color|reference"/>
+        <attr name="slide_buttonSelectedColor" format="color"/>
+    </declare-styleable>
+</resources>
