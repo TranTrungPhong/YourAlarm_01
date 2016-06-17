@@ -36,8 +36,8 @@ import pub.devrel.easypermissions.EasyPermissions;
  * Created by phongtran on 13/06/2016.
  */
 public class EventUtil {
-    private Context mContext;
-    private GoogleAccountCredential mCredential;
+    private static Context mContext;
+    private static GoogleAccountCredential mCredential;
 
     public EventUtil(Context mContext, GoogleAccountCredential credential) {
         this.mContext = mContext;
@@ -45,7 +45,7 @@ public class EventUtil {
     }
 
 
-    public String getResultsFromApi() {
+    public static String getResultsFromApi() {
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
@@ -56,14 +56,14 @@ public class EventUtil {
         return Const.ACCOUNT_SUCCESS;
     }
 
-    public boolean isDeviceOnline() {
+    public static boolean isDeviceOnline() {
         ConnectivityManager connMgr =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    public boolean isGooglePlayServicesAvailable() {
+    public static boolean isGooglePlayServicesAvailable() {
         GoogleApiAvailability apiAvailability =
                 GoogleApiAvailability.getInstance();
         final int connectionStatusCode =
@@ -71,7 +71,7 @@ public class EventUtil {
         return connectionStatusCode == ConnectionResult.SUCCESS;
     }
 
-    public void acquireGooglePlayServices() {
+    public static void acquireGooglePlayServices() {
         GoogleApiAvailability apiAvailability =
                 GoogleApiAvailability.getInstance();
         final int connectionStatusCode =
@@ -81,7 +81,7 @@ public class EventUtil {
         }
     }
 
-    public void showGooglePlayServicesAvailabilityErrorDialog(
+    public static void showGooglePlayServicesAvailabilityErrorDialog(
             final int connectionStatusCode) {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(

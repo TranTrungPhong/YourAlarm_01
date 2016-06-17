@@ -2,6 +2,7 @@ package com.framgia.youralarm1.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Date;
  */
 public class EventTimeUtil {
 
-    public String eventTime(int minute) {
+    public static String eventTime(int minute) {
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         calendar.set(java.util.Calendar.HOUR, minute / 60);
         calendar.set(java.util.Calendar.MINUTE, minute % 60);
@@ -18,7 +19,7 @@ public class EventTimeUtil {
         return getDate(calendar.getTimeInMillis());
     }
 
-    public String getDate(long timeStamp) {
+    public static String getDate(long timeStamp) {
 
         try {
             DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSZZZZZ");

@@ -7,6 +7,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.google.gson.Gson;
@@ -22,7 +23,7 @@ import java.util.List;
  */
 public class MySqliteHelper extends SQLiteOpenHelper {
     //Database Config
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 6;
     public static final String DATABASE_NAME = "MyAlarm.db";
     //Table name
     public static final String TABLE_ALARM = "Alarm";
@@ -150,6 +151,7 @@ public class MySqliteHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         db.close();
+
         return alarmList;
     }
 

@@ -42,13 +42,15 @@
     <string name="permission_get_account_ok">permission get accounts OK</string>
     <string name="permission_get_account_failed">You need to access your contacts to sync data
         with google calendar API</string>
-    <string name="recurrence_update">RRULE:FREQ=WEEKLY;UNTIL=20170614;BYDAY=</string>
+    <string name="recurrence_update">RRULE:FREQ=WEEKLY;COUNT=7;BYDAY=</string>
     <string name="time_zone">(GMT+7:00) Hà Nội</string>
-    <string name="event_id_null">Event ID null !</string>
-    <string name="create_api">Creating Event ...</string>
-    <string name="update_api">Creating Event ...</string>
-    <string name="delete_api">Creating Event ...</string>
-    <string name="delete_fail">Delete fail !</string>
-    <string name="update_fail">Update fail !</string>
-
+    <string name="create_fail">Creating on server fail !</string>
+    <string name="create_api">Creating Event server ...</string>
+    <string name="update_api">Update Event server ...</string>
+    <string name="delete_api">Delete Event on server...</string>
+    <string name="delete_fail">Delete on server fail !</string>
+    <string name="update_fail">Update server fail !</string>
+    <string name="sync_server">Synchronize events from google API Calendar</string>
+    <string name="syn_fails">Synchronize fail !</string>
+    <string name="syn_success">Synchronize success !</string>
 </resources>
