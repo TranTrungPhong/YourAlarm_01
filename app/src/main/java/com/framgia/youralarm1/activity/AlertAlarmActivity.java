@@ -1,7 +1,9 @@
 package com.framgia.youralarm1.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
@@ -10,9 +12,9 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.contstant.Const;
@@ -34,6 +36,9 @@ public class AlertAlarmActivity extends AppCompatActivity
     private Vibrator vibrator;
     private AudioManager audioManager;
     private CountDownTimer mCountDownTimer;
+    private boolean mIsDismissed = false;
+    private boolean mIsSnooze = false;
+    private BroadcastReceiver mPowerPressReceiver;
 
     @Override
     public void onAttachedToWindow() {
@@ -172,6 +177,7 @@ public class AlertAlarmActivity extends AppCompatActivity
     }
 
     private void onDismissAlarm() {
+        mIsDismissed = true;
         AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true);
         mCountDownTimer.cancel();
         updateWhenAppOpenning();
@@ -179,6 +185,7 @@ public class AlertAlarmActivity extends AppCompatActivity
     }
 
     private void onSnoozeAlarm() {
+        mIsSnooze = true;
         mCountDownTimer.cancel();
         AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
         updateWhenAppOpenning();
@@ -191,8 +198,42 @@ public class AlertAlarmActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mIsDismissed = false;
+        mIsSnooze = false;
+        if (mPowerPressReceiver == null) {
+            mPowerPressReceiver  = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    switch (intent.getAction()) {
+                        case Intent.ACTION_SCREEN_OFF:
+                            if (!mIsDismissed)
+                                onDismissAlarm();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            };
+        }
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mPowerPressReceiver, filter);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mPowerPressReceiver);
+        if (!mIsDismissed && !mIsSnooze)
+            onDismissAlarm();
         stopAlarm();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (!mIsDismissed && !mIsSnooze)
+            onDismissAlarm();
     }
 }
