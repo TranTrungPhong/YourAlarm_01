@@ -98,7 +98,7 @@ public class UpdateEvent extends AsyncTask<Void, Void, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        if (mItemAlarm.getIdEvent().equals("")) {
+        if (mItemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
             cancel(true);
         }
         mProgress = new ProgressDialog(mContext);
@@ -112,10 +112,6 @@ public class UpdateEvent extends AsyncTask<Void, Void, String> {
                 mByDay.append(mDaylist.get(i).toString());
             }
         }
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSZZZZZ");
-        Calendar cal = Calendar.getInstance();
-        Date date = new Date();
-        mDateTime = new DateTime(dateFormat.format(cal.getTime()));
     }
 
     @Override
@@ -132,7 +128,7 @@ public class UpdateEvent extends AsyncTask<Void, Void, String> {
                 };
                 event.setRecurrence(Arrays.asList(recurrence));
             }
-            if (event.getId().equals("")) {
+            if (event.getId().equals(Const.DEFAULT_EVENT_ID)) {
                 return null;
             }
             event = mService.events()

@@ -1,5 +1,6 @@
 package com.framgia.youralarm1.util;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -30,21 +31,21 @@ import java.util.Map;
 /**
  * Created by phongtran on 16/06/2016.
  */
-public class SyncEventFromServer extends AsyncTask<Void, Void, String> {
+public class SyncEventToServer extends AsyncTask<Void, Void, String> {
     private com.google.api.services.calendar.Calendar mService = null;
     private List<ItemAlarm> mItemAlarms;
     private List<String> mDaylist = new ArrayList<>();
     private StringBuffer mByDay = new StringBuffer();
     private ProgressDialog mProgress;
-    private Context mContext;
+    private Activity mContext;
     private MySqliteHelper mySqliteHelper;
     private String mTimeEvent;
 
-    public SyncEventFromServer(Context context,
-                               GoogleAccountCredential credential,
-                               List<ItemAlarm> itemAlarms) {
+    public SyncEventToServer(Activity context,
+                             GoogleAccountCredential credential,
+                             List<ItemAlarm> itemAlarms) {
         mContext = context;
-        this.mItemAlarms = itemAlarms;
+        mItemAlarms = itemAlarms;
         mySqliteHelper = new MySqliteHelper(mContext);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -58,11 +59,21 @@ public class SyncEventFromServer extends AsyncTask<Void, Void, String> {
     protected String doInBackground(Void... params) {
         String response = null;
         for (ItemAlarm itemAlarm : mItemAlarms) {
+//            if (itemAlarm.getTime() != 0) {
             mTimeEvent = EventTimeUtil.eventTime(itemAlarm.getTime());
-            if (itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
+//            }
+            if (mTimeEvent != null && itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
                 Event event = new Event()
                         .setSummary(itemAlarm.getTitle().toString());
-                DateTime startDateTime = new DateTime(mTimeEvent);
+                DateTime startDateTime = null;
+                try {
+                    startDateTime = new DateTime(mTimeEvent);
+                } catch (NumberFormatException e) {
+                    String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
+                    String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
+                    mTimeEvent = sd + ":" + sc;
+                    startDateTime = new DateTime(mTimeEvent);
+                }
                 EventDateTime start = new EventDateTime()
                         .setDateTime(startDateTime)
                         .setTimeZone(mContext.getString(R.string.time_zone));
@@ -76,14 +87,15 @@ public class SyncEventFromServer extends AsyncTask<Void, Void, String> {
                     event = mService.events()
                             .insert(mContext.getString(R.string.primary), event)
                             .execute();
-                    itemAlarm.setIdEvent(event.getId().toString());
+                    itemAlarm.setIdEvent(event.getId());
                     mySqliteHelper.updateAlarm(itemAlarm);
-                    response = event.getId().toString();
+                    response = event.toString();
                     continue;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else {
+            }
+            if (mTimeEvent != null && !itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
                 mDaylist = getRecurrence(itemAlarm);
                 for (int i = 0; i < mDaylist.size(); i++) {
                     if (i < mDaylist.size() - 1) {
@@ -106,6 +118,7 @@ public class SyncEventFromServer extends AsyncTask<Void, Void, String> {
                     event = mService.events()
                             .update(mContext.getString(R.string.primary), event.getId(), event)
                             .execute();
+                    mySqliteHelper.updateAlarm(itemAlarm);
                     response = event.toString();
                     continue;
                 } catch (IOException e) {
@@ -126,6 +139,8 @@ public class SyncEventFromServer extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPostExecute(String s) {
+        mItemAlarms.clear();
+        mItemAlarms.addAll(mySqliteHelper.getListAlarm());
         super.onPostExecute(s);
         if (mProgress != null && mProgress.isShowing()) {
             mProgress.dismiss();

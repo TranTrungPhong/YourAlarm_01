@@ -41,7 +41,7 @@ import com.framgia.youralarm1.util.EventTimeUtil;
 import com.framgia.youralarm1.util.EventUtil;
 import com.framgia.youralarm1.util.MakeRequestTask;
 import com.framgia.youralarm1.util.PreferenceUtil;
-import com.framgia.youralarm1.util.SyncEventFromServer;
+import com.framgia.youralarm1.util.SyncEventToServer;
 import com.framgia.youralarm1.util.UpdateEvent;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -53,7 +53,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
 import java.io.IOException;
@@ -63,11 +62,8 @@ import com.framgia.youralarm1.utils.AlarmUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -169,9 +165,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mInvalidDataReceiver);
+    protected void onPause() {
+        super.onPause();
+        if (mProgress != null) {
+            mProgress.dismiss();
+            mProgress = null;
+        }
     }
 
     @Override
@@ -280,8 +279,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDeletedAlarm(int position) {
+        new DeleteEvent(MainActivity.this, mCredential, mAlarmList.get(position)).execute();
         try {
-            new DeleteEvent(MainActivity.this, mCredential, mAlarmList.get(position)).execute();
             mMySqliteHelper.deleteAlarm(mAlarmList.get(position));
         } catch (SQLiteException e) {
             e.printStackTrace();
@@ -322,15 +321,14 @@ public class MainActivity extends AppCompatActivity
                                 mAlarmAdapter.notifyDataSetChanged();
                                 if (mAlarmList.size() > 0)
                                     mRecyclerView.smoothScrollToPosition(mAlarmList.size() - 1);
-                                new CreatEvent(MainActivity.this, mCredential, itemAlarm).execute();
                                 AlarmUtils.setNextAlarm(MainActivity.this, itemAlarm, false);
                             } catch (SQLiteException e) {
                                 e.printStackTrace();
                             }
-
+                            new CreatEvent(MainActivity.this, mCredential, itemAlarm).execute();
                         }
                     }
-                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE) + 1, false);
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE) + 1, true);
         timePickerDialog.show();
     }
 
@@ -409,12 +407,171 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         List<ItemAlarm> alarmList = mMySqliteHelper.getListAlarm();
+        mAlarmList.clear();
+        mAlarmList.addAll(alarmList);
+        mAlarmAdapter.notifyDataSetChanged();
         if (item.getItemId() == R.id.action_sync) {
             Toast.makeText(MainActivity.this, R.string.sync_server, Toast.LENGTH_SHORT).show();
-            for (ItemAlarm itemAlarm : alarmList) {
+            if (mProgress != null && mProgress.isShowing()) {
+                mProgress.dismiss();
             }
-            new SyncEventFromServer(MainActivity.this, mCredential, alarmList).execute();
+            new SyncFromServer(mCredential, alarmList).execute();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public class SyncFromServer extends AsyncTask<Void, Void, List<Event>> {
+        private com.google.api.services.calendar.Calendar mService = null;
+        private Exception mLastError = null;
+        private List<ItemAlarm> mItemAlarms;
+
+        public SyncFromServer(GoogleAccountCredential credential, List<ItemAlarm> list) {
+            mItemAlarms = list;
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.calendar
+                    .Calendar.Builder(transport, jsonFactory, credential)
+                    .setApplicationName(getString(R.string.application_name))
+                    .build();
+        }
+
+        @Override
+        protected List<Event> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        private List<Event> getDataFromApi() throws IOException {
+            DateTime now = new DateTime(System.currentTimeMillis() - Const.BEFORE_CURENT_TIME * 60);
+            Events events = mService.events().list(getString(R.string.primary))
+                    .setMaxResults(Const.COUNT_RESULT)
+                    .setTimeMin(now)
+                    .setOrderBy(getString(R.string.startTime))
+                    .setSingleEvents(true)
+                    .execute();
+            List<Event> items = events.getItems();
+            return items;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            if (mProgress != null && !mProgress.isShowing()) {
+                mProgress.show();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> events) {
+            if (mProgress != null && mProgress.isShowing()) {
+                mProgress.dismiss();
+            }
+            if (events == null || events.size() == 0) {
+                for (ItemAlarm alarm : mItemAlarms) {
+                    if (!alarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
+                        mAlarmList.remove(alarm);
+                        mMySqliteHelper.deleteAlarm(alarm);
+                        mAlarmAdapter.notifyDataSetChanged();
+                    }
+                }
+            } else if (events.size() != 0) {
+                for (int i = 0; i < mItemAlarms.size(); i++) {
+                    boolean flag = false;
+                    for (Event event : events) {
+                        if (mItemAlarms.get(i).getIdEvent().equals(getIdeventRepeat(event.getId()))) {
+                            flag = true;
+                        }
+                    }
+                    if (!flag && !mItemAlarms.get(i).getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
+                        mMySqliteHelper.deleteAlarm(mItemAlarms.get(i));
+                        mAlarmList.clear();
+                        mAlarmList.addAll(mMySqliteHelper.getListAlarm());
+                        mAlarmAdapter.notifyDataSetChanged();
+                    }
+                }
+                for (Event event : events) {
+                    int sum = event.getId().toString().length();
+                    int eventTimeStart = EventTimeUtil.timeAlarm(event.getStart());// phut
+                    if (sum < 30) {
+                        boolean flag = false;
+                        for (ItemAlarm alarm : mItemAlarms) {
+                            if (event.getId().equals(alarm.getIdEvent())) {
+                                flag = true;
+                            }
+                        }
+                        if (!flag) {
+                            ItemAlarm itemAlarm = new ItemAlarm();
+                            itemAlarm.setIdEvent(event.getId());
+                            itemAlarm.setTime(eventTimeStart);
+                            itemAlarm.setTitle(event.getSummary().toString());
+                            int idAlarm = addAlarmCache(itemAlarm);
+                            itemAlarm.setId(idAlarm);
+                            mAlarmList.add(itemAlarm);
+                            mAlarmAdapter.notifyDataSetChanged();
+                        }
+                    } else if (sum > 30) {
+                        boolean flag = false;
+                        for (ItemAlarm alarm : mItemAlarms) {
+                            if (getIdeventRepeat(event.getId())
+                                    .equals(getIdeventRepeat(alarm.getIdEvent()))) {
+                                flag = true;
+                            }
+                        }
+                        if (!flag) {
+                            ItemAlarm itemAlarm = new ItemAlarm();
+                            itemAlarm.setIdEvent(getIdeventRepeat(event.getId()));
+                            itemAlarm.setTime(eventTimeStart);
+                            itemAlarm.setTitle(event.getSummary().toString());
+                            int idAlarm = addAlarmCache(itemAlarm);
+                            itemAlarm.setId(idAlarm);
+                            mAlarmList.add(itemAlarm);
+                            mAlarmAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+            if (mMySqliteHelper.getListAlarm().size() == 0) {
+                mAlarmList.clear();
+                mAlarmAdapter.notifyDataSetChanged();
+            }
+            new SyncEventToServer(MainActivity.this, mCredential, mItemAlarms).execute();
+        }
+
+        private String getIdeventRepeat(String s) {
+            if (s.length() > 30) {
+                String result[] = s.split("[_]");
+                return result[0];
+            }
+            return s;
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mProgress != null && mProgress.isShowing()) {
+                mProgress.dismiss();
+            }
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    EventUtil.showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Const.REQUEST_AUTHORIZATION);
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.error_occurred, Toast.LENGTH_SHORT)
+                            .show();
+                }
+            } else {
+                Toast.makeText(MainActivity.this, R.string.request_canclled, Toast.LENGTH_SHORT)
+                        .show();
+            }
+            new SyncEventToServer(MainActivity.this, mCredential, mItemAlarms).execute();
+        }
     }
 }

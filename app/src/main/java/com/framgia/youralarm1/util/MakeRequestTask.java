@@ -10,6 +10,8 @@ import android.widget.Toast;
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.activity.MainActivity;
 import com.framgia.youralarm1.contstant.Const;
+import com.framgia.youralarm1.data.MySqliteHelper;
+import com.framgia.youralarm1.models.ItemAlarm;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -34,9 +36,11 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
     private com.google.api.services.calendar.Calendar mService = null;
     private Exception mLastError = null;
     private List<String> mCalendarItems = new ArrayList<>();
+    private MySqliteHelper mySqliteHelper;
 
     public MakeRequestTask(Activity context, GoogleAccountCredential credential) {
         mContext = context;
+        mySqliteHelper = new MySqliteHelper(mContext);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
         mService = new com.google.api.services.calendar
@@ -57,7 +61,7 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
     }
 
     private List<String> getDataFromApi() throws IOException {
-        DateTime now = new DateTime(System.currentTimeMillis() - Const.BEFORE_CURENT_TIME);
+        DateTime now = new DateTime(System.currentTimeMillis() - Const.BEFORE_CURENT_TIME * 60);
         List<String> eventStrings = new ArrayList<String>();
         Events events = mService.events().list(mContext.getString(R.string.primary))
                 .setMaxResults(Const.COUNT_RESULT)
@@ -96,7 +100,7 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
             mCalendarItems.clear();
             mCalendarItems.addAll(output);
             Toast.makeText(mContext,
-                    mContext.getString(R.string.size_event) + mCalendarItems.size(),
+                    mContext.getString(R.string.done),
                     Toast.LENGTH_SHORT).show();
         }
     }
