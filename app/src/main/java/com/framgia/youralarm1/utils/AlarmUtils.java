@@ -72,6 +72,12 @@ public class AlarmUtils {
                     if (dayAlarm > today) {
                         if (dayAlarm - today < numdayNext)
                             numdayNext = dayAlarm - today;
+                    } else if (dayAlarm == today) {
+                        int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 60 +
+                                Calendar.getInstance().get(Calendar.MINUTE);
+                        if (time >= itemAlarm.getTime())
+                            numdayNext = 7;
+                        else numdayNext = 0;
                     } else {
                         if (dayAlarm + 7 - today < numdayNext)
                             numdayNext = dayAlarm + 7 - today;
@@ -82,7 +88,7 @@ public class AlarmUtils {
             if (isRinging) {
                 Calendar calendar = Calendar.getInstance(Locale.getDefault());
                 int nowTime = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
-                if (nowTime > itemAlarm.getTime())
+                if (nowTime >= itemAlarm.getTime())
                     itemAlarm.setStatus(false);
             }
         }
@@ -133,4 +139,5 @@ public class AlarmUtils {
         alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis() + (count + 1) * snoozeTime,
                      alarmIntent);
     }
+
 }

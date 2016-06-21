@@ -48,4 +48,5 @@ public class Const {
     public static final String DELETE_FAIL = "fail";
     public static final String DELETE_SUCCESS = "success";
     public static final String DEFAULT_EVENT_ID = "deefault_event_id";
+    public static final int DAY_IN_MINUTES = 1440;
 }

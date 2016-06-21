@@ -58,5 +58,10 @@
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
     <string name="repeat">Repeat</string>
+    <string name="notify_snooze">Snooze after </string>
+    <string name="hour">hour</string>
+    <string name="minute">minute</string>
+    <string name="notify_set_alarm">Alarm ring after </string>
+    <string name="day">day</string>
 
 </resources>
