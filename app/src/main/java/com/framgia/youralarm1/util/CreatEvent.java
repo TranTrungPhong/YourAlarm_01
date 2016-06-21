@@ -59,8 +59,15 @@ public class CreatEvent extends AsyncTask<String, String, String> {
 
         Event event = new Event()
                 .setSummary(mItemAlarm.getTitle().toString());
-
-        DateTime startDateTime = new DateTime(mTimeEvent);
+        DateTime startDateTime = null;
+        try {
+            startDateTime = new DateTime(mTimeEvent);
+        } catch (NumberFormatException e) {
+            String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
+            String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
+            mTimeEvent = sd + ":" + sc;
+            startDateTime = new DateTime(mTimeEvent);
+        }
         EventDateTime start = new EventDateTime()
                 .setDateTime(startDateTime)
                 .setTimeZone(mContext.getString(R.string.time_zone));

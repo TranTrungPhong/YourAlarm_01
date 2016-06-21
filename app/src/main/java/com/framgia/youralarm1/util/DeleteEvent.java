@@ -42,7 +42,7 @@ public class DeleteEvent extends AsyncTask<Void, Void, String> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        if (mItemAlarm.getIdEvent().equals("")) {
+        if (mItemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
             cancel(true);
         }
         mProgress = new ProgressDialog(mContext);

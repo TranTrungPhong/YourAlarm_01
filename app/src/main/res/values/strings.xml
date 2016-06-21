@@ -42,7 +42,7 @@
     <string name="permission_get_account_ok">permission get accounts OK</string>
     <string name="permission_get_account_failed">You need to access your contacts to sync data
         with google calendar API</string>
-    <string name="recurrence_update">RRULE:FREQ=WEEKLY;COUNT=7;BYDAY=</string>
+    <string name="recurrence_update">RRULE:FREQ=WEEKLY;COUNT=6;BYDAY=</string>
     <string name="time_zone">(GMT+7:00) Hà Nội</string>
     <string name="create_fail">Creating on server fail !</string>
     <string name="create_api">Creating Event server ...</string>
@@ -63,5 +63,6 @@
     <string name="minute">minute</string>
     <string name="notify_set_alarm">Alarm ring after </string>
     <string name="day">day</string>
+    <string name="done">Done !</string>
 
 </resources>
