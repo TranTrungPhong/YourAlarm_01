@@ -224,7 +224,9 @@ public class AlertAlarmActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mPowerPressReceiver);
+        if (mPowerPressReceiver != null) {
+            unregisterReceiver(mPowerPressReceiver);
+        }
         if (!mIsDismissed && !mIsSnooze)
             onDismissAlarm();
         stopAlarm();

@@ -8,11 +8,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import com.framgia.youralarm1.R;
+import com.framgia.youralarm1.activity.MainActivity;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.framgia.youralarm1.utils.AlarmUtils;
@@ -43,10 +46,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     private int mLayoutExpandHeight;
     private OnAdapterInterActionListener mOnAdapterInterActionListener;
     private boolean isClickExpand = false;
-
-    public AlarmAdapter(Context context, List<ItemAlarm> alarmList) {
+    private boolean isCheckFloat = false;
+    private FloatingActionButton mFab;
+    public AlarmAdapter(Context context, List<ItemAlarm> alarmList, FloatingActionButton button) {
         mContext = context;
         mAlarmList = alarmList;
+        mFab = button;
         if (mContext instanceof OnAdapterInterActionListener)
             mOnAdapterInterActionListener = (OnAdapterInterActionListener) mContext;
         else {
@@ -178,9 +183,13 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     private void expand(View summary, boolean isAnimation) {
         summary.setVisibility(View.VISIBLE);
         final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        summary.measure(widthSpec, Const.HEIGHT_MEASURE_SPEC_DEFAULT);
-
-        ValueAnimator mAnimator = slideAnimator(0, summary.getMeasuredHeight(), summary);
+//        summary.measure(widthSpec, Const.HEIGHT_MEASURE_SPEC_DEFAULT);
+        DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+        int density = metrics.densityDpi;
+        ValueAnimator mAnimator
+                = slideAnimator(0,
+                Const.HEIGHT_MEASURE_SPEC_DEFAULT * density / DisplayMetrics.DENSITY_DEFAULT,
+                summary);
         if (! isAnimation) mAnimator.setDuration(0);
         mAnimator.start();
     }
@@ -289,16 +298,45 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
             case R.id.image_expand_item:
                 isClickExpand = true;
                 selectedView(position);
+                if(!isCheckFloat){
+                    isCheckFloat = true;
+                    checkFloatAddAlarm(isCheckFloat);
+                }else{
+                    isCheckFloat =false;
+                    checkFloatAddAlarm(isCheckFloat);
+                }
                 break;
             case R.id.image_action_delete:
                 mOnAdapterInterActionListener.onDeletedAlarm(position);
+                if(!isCheckFloat){
+                    isCheckFloat = true;
+                    checkFloatAddAlarm(isCheckFloat);
+                }else{
+                    isCheckFloat =false;
+                    checkFloatAddAlarm(isCheckFloat);
+                }
                 break;
             case R.id.layout_parent:
                 isClickExpand = true;
                 selectedView(position);
+                if(!isCheckFloat){
+                    isCheckFloat = true;
+                    checkFloatAddAlarm(isCheckFloat);
+                }else{
+                    isCheckFloat =false;
+                    checkFloatAddAlarm(isCheckFloat);
+                }
                 break;
             default:
                 break;
+        }
+    }
+
+    public void checkFloatAddAlarm(boolean isCheck){
+        if(isCheck){
+            mFab.setVisibility(View.GONE);
+        }else{
+            mFab.setVisibility(View.VISIBLE);
         }
     }
 
