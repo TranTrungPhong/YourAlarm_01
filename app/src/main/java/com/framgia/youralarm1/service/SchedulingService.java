@@ -4,9 +4,12 @@ import android.app.IntentService;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import com.framgia.youralarm1.R;
+import com.framgia.youralarm1.activity.AlertAlarmActivity;
 import com.framgia.youralarm1.broadcast.AlarmReceiver;
+import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.data.MySqliteHelper;
 import com.framgia.youralarm1.models.ItemAlarm;
 import com.framgia.youralarm1.utils.NotificationUtils;
@@ -31,7 +34,15 @@ public class SchedulingService extends IntentService {
                 mySqliteHelper.getAlarm(intent.getExtras().getInt(MySqliteHelper.COLUMN_ID, - 1));
         int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 60 +
                 Calendar.getInstance().get(Calendar.MINUTE);
-        NotificationUtils.showNotification(this, itemAlarm);
+//        NotificationUtils.showNotification(this, itemAlarm);
+        Intent fullScreenIntent = new Intent(this, AlertAlarmActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(Const.ITEM_ALARM, itemAlarm);
+        fullScreenIntent.putExtras(bundle);
+        fullScreenIntent.setAction(Const.ACTION_FULLSCREEN_ACTIVITY);
+        fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(fullScreenIntent);
+
 
         if (myKM.inKeyguardRestrictedInputMode()) {
             //TODO: do when screen locked

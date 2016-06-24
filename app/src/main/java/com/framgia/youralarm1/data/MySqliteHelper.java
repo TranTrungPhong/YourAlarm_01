@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class MySqliteHelper extends SQLiteOpenHelper {
     //Database Config
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 7;
     public static final String DATABASE_NAME = "MyAlarm.db";
     //Table name
     public static final String TABLE_ALARM = "Alarm";

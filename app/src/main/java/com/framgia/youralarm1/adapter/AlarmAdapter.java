@@ -8,11 +8,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.provider.Settings;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +25,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 import com.framgia.youralarm1.R;
+import com.framgia.youralarm1.activity.MainActivity;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.models.ItemAlarm;
+import com.framgia.youralarm1.util.PreferenceUtil;
 import com.framgia.youralarm1.utils.AlarmUtils;
 import com.framgia.youralarm1.utils.ParseTimeUtils;
 import com.framgia.youralarm1.widget.CircularButton;
@@ -43,10 +49,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     private int mLayoutExpandHeight;
     private OnAdapterInterActionListener mOnAdapterInterActionListener;
     private boolean isClickExpand = false;
-
-    public AlarmAdapter(Context context, List<ItemAlarm> alarmList) {
+    private boolean isCheckFloat = false;
+    private FloatingActionButton mFab;
+    public AlarmAdapter(Context context, List<ItemAlarm> alarmList, FloatingActionButton button) {
         mContext = context;
         mAlarmList = alarmList;
+        mFab = button;
         if (mContext instanceof OnAdapterInterActionListener)
             mOnAdapterInterActionListener = (OnAdapterInterActionListener) mContext;
         else {
@@ -97,14 +105,24 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
             setSelectedButtonWeekday(arrCircularButton, arrWeekday, itemAlarm);
 
             String ringToneName;
-            if (itemAlarm.getRingTonePath() != null)
+            if (itemAlarm.getRingTonePath() != null && !itemAlarm.getRingTonePath().equals(""))
                 ringToneName = RingtoneManager.getRingtone(mContext,
                                                            Uri.parse(itemAlarm.getRingTonePath()))
                                                                 .getTitle(mContext);
             else {
-                Uri currenturi =
-                        RingtoneManager.getActualDefaultRingtoneUri(mContext,
-                                                                    RingtoneManager.TYPE_ALARM);
+                PreferenceUtil preferenceUtil = new PreferenceUtil(mContext);
+                Uri currenturi;
+                try {
+                    currenturi = Uri.parse(preferenceUtil.getStringData(Const.MY_PREFERENCES,
+                                                                        Const.PRE_ALARM_SOUND));
+                    if (currenturi.equals(Settings.System.DEFAULT_ALARM_ALERT_URI))
+                        currenturi = RingtoneManager.getActualDefaultRingtoneUri(mContext,
+                                                                                 RingtoneManager.TYPE_RINGTONE);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                        currenturi = RingtoneManager.getActualDefaultRingtoneUri(mContext,
+                                                                                 RingtoneManager.TYPE_RINGTONE);
+                }
                 ringToneName = RingtoneManager.getRingtone(mContext, currenturi).getTitle(mContext);
                 ringToneName += Const.DEFAULT;
             }
@@ -152,11 +170,13 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     private void selectedView(int position) {
         if (mAlarmList.get(position).isExpand()) {
             mAlarmList.get(position).setExpand(false);
+            checkFloatAddAlarm(false);
         } else {
             for (ItemAlarm itemAlarm : mAlarmList) {
                 itemAlarm.setExpand(false);
             }
             mAlarmList.get(position).setExpand(true);
+            checkFloatAddAlarm(true);
         }
         notifyDataSetChanged();
     }
@@ -178,9 +198,13 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
     private void expand(View summary, boolean isAnimation) {
         summary.setVisibility(View.VISIBLE);
         final int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        summary.measure(widthSpec, Const.HEIGHT_MEASURE_SPEC_DEFAULT);
-
-        ValueAnimator mAnimator = slideAnimator(0, summary.getMeasuredHeight(), summary);
+//        summary.measure(widthSpec, Const.HEIGHT_MEASURE_SPEC_DEFAULT);
+        DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
+        int density = metrics.densityDpi;
+        ValueAnimator mAnimator
+                = slideAnimator(0,
+                Const.HEIGHT_MEASURE_SPEC_DEFAULT * density / DisplayMetrics.DENSITY_DEFAULT,
+                summary);
         if (! isAnimation) mAnimator.setDuration(0);
         mAnimator.start();
     }
@@ -268,8 +292,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                     Uri currenturi =
                             RingtoneManager.getActualDefaultRingtoneUri(mContext,
                                                                         RingtoneManager.TYPE_ALARM);
-                    ringToneUri = RingtoneManager.getRingtone(mContext, currenturi)
-                            .getTitle(mContext);
+                    ringToneUri = String.valueOf(RingtoneManager.getRingtone(mContext, currenturi));
                 } else ringToneUri = mAlarmList.get(position).getRingTonePath();
 
                 Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
@@ -292,6 +315,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 break;
             case R.id.image_action_delete:
                 mOnAdapterInterActionListener.onDeletedAlarm(position);
+                    checkFloatAddAlarm(false);
                 break;
             case R.id.layout_parent:
                 isClickExpand = true;
@@ -299,6 +323,14 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 break;
             default:
                 break;
+        }
+    }
+
+    public void checkFloatAddAlarm(boolean isCheck){
+        if(isCheck){
+            mFab.setVisibility(View.GONE);
+        }else{
+            mFab.setVisibility(View.VISIBLE);
         }
     }
 
@@ -354,8 +386,10 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 itemAlarm.setStatus(isChecked);
                 if (itemAlarm.isStatus())
                     mOnAdapterInterActionListener.onChangedAlarm(position);
-                else
+                else {
                     AlarmUtils.cancelAlarm(mContext, itemAlarm);
+                    Toast.makeText(mContext, R.string.alarm_cancelled, Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }

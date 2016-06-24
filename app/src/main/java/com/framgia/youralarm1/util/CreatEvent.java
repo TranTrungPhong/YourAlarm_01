@@ -1,6 +1,7 @@
 package com.framgia.youralarm1.util;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -24,7 +25,7 @@ import java.io.IOException;
 /**
  * Created by phongtran on 16/06/2016.
  */
-public class CreatEvent extends AsyncTask<String, String, String> {
+public class CreatEvent extends Fragment {
     private Activity mContext;
     private ProgressDialog mProgress;
     private com.google.api.services.calendar.Calendar mService = null;
@@ -32,8 +33,11 @@ public class CreatEvent extends AsyncTask<String, String, String> {
     private String mTimeEvent;
     private MySqliteHelper mySqliteHelper;
     private GoogleAccountCredential mCredential;
+    private MakeRequestTask mMakeRequestTask;
+    public CreatEvent() {
+    }
 
-    public CreatEvent(Activity context, GoogleAccountCredential credential, ItemAlarm itemAlarm) {
+    public void getData(Activity context, GoogleAccountCredential credential, ItemAlarm itemAlarm) {
         mContext = context;
         mItemAlarm = itemAlarm;
         mCredential = credential;
@@ -44,62 +48,71 @@ public class CreatEvent extends AsyncTask<String, String, String> {
                 .setApplicationName(mContext.getResources().getString(R.string.application_name))
                 .build();
         mySqliteHelper = new MySqliteHelper(mContext);
+        mMakeRequestTask = new MakeRequestTask();
+    }
+    public void excuteAsyntask(){
+        new CreatEventCalendar().execute();
     }
 
-    @Override
-    protected void onPreExecute() {
-        mProgress = new ProgressDialog(mContext);
-        mProgress.setMessage(mContext.getString(R.string.calling_api));
-        mProgress.show();
-        mTimeEvent = EventTimeUtil.eventTime(mItemAlarm.getTime());
-    }
+    public class CreatEventCalendar extends AsyncTask<String, String, String> {
 
-    @Override
-    protected String doInBackground(String... params) {
-
-        Event event = new Event()
-                .setSummary(mItemAlarm.getTitle().toString());
-        DateTime startDateTime = null;
-        try {
-            startDateTime = new DateTime(mTimeEvent);
-        } catch (NumberFormatException e) {
-            String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
-            String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
-            mTimeEvent = sd + ":" + sc;
-            startDateTime = new DateTime(mTimeEvent);
+        @Override
+        protected void onPreExecute() {
+            mProgress = new ProgressDialog(mContext);
+            mProgress.setMessage(mContext.getString(R.string.calling_api));
+            mProgress.show();
+            mTimeEvent = EventTimeUtil.eventTime(mItemAlarm.getTime());
         }
-        EventDateTime start = new EventDateTime()
-                .setDateTime(startDateTime)
-                .setTimeZone(mContext.getString(R.string.time_zone));
-        event.setStart(start);
 
-        DateTime endDateTime = new DateTime(mTimeEvent);
-        EventDateTime end = new EventDateTime()
-                .setDateTime(endDateTime)
-                .setTimeZone(mContext.getString(R.string.time_zone));
-        event.setEnd(end);
-        try {
-            event = mService.events()
-                    .insert(mContext.getString(R.string.primary), event)
-                    .execute();
-            return event.getId().toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+        @Override
+        protected String doInBackground(String... params) {
 
-    @Override
-    protected void onPostExecute(String aVoid) {
-        if (mProgress != null && mProgress.isShowing()) {
-            mProgress.dismiss();
+            Event event = new Event()
+                    .setSummary(mItemAlarm.getTitle().toString());
+            DateTime startDateTime = null;
+            try {
+                startDateTime = new DateTime(mTimeEvent);
+            } catch (NumberFormatException e) {
+                String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
+                String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
+                mTimeEvent = sd + ":" + sc;
+                startDateTime = new DateTime(mTimeEvent);
+            }
+            EventDateTime start = new EventDateTime()
+                    .setDateTime(startDateTime)
+                    .setTimeZone(mContext.getString(R.string.time_zone));
+            event.setStart(start);
+
+            DateTime endDateTime = new DateTime(mTimeEvent);
+            EventDateTime end = new EventDateTime()
+                    .setDateTime(endDateTime)
+                    .setTimeZone(mContext.getString(R.string.time_zone));
+            event.setEnd(end);
+            try {
+                event = mService.events()
+                        .insert(mContext.getString(R.string.primary), event)
+                        .execute();
+                return event.getId().toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
-        if (aVoid == null) {
-            Toast.makeText(mContext, R.string.create_fail, Toast.LENGTH_SHORT).show();
-        } else {
-            mItemAlarm.setIdEvent(aVoid);
-            mySqliteHelper.updateAlarm(mItemAlarm);
-            new MakeRequestTask(mContext, mCredential).execute();
+
+        @Override
+        protected void onPostExecute(String aVoid) {
+            if (mProgress != null && mProgress.isShowing()) {
+                mProgress.dismiss();
+            }
+            if (aVoid == null) {
+                Toast.makeText(mContext, R.string.create_fail, Toast.LENGTH_SHORT).show();
+            } else {
+                mItemAlarm.setIdEvent(aVoid);
+                mySqliteHelper.updateAlarm(mItemAlarm);
+//                new MakeRequestTask(mContext, mCredential).execute();
+                mMakeRequestTask.getData(mContext,mCredential);
+                mMakeRequestTask.excuteMake();
+            }
         }
     }
 }
