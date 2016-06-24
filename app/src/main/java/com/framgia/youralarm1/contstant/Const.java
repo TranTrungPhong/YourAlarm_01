@@ -1,6 +1,7 @@
 package com.framgia.youralarm1.contstant;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import com.google.api.services.calendar.CalendarScopes;
 
 /**
@@ -13,7 +14,7 @@ public class Const {
     public static final String DEFAUL_TITLE = "Title";
     public static final String LIST_ALARM_PREFERENCE = "list_alarm";
     public static final String LIST_ALARM = "list_alarm";
-    public static final int HEIGHT_MEASURE_SPEC_DEFAULT = 300;
+    public static final int HEIGHT_MEASURE_SPEC_DEFAULT = 250;
     public static final int REQUEST_ACCOUNT_PICKER = 1000;
     public static final int REQUEST_AUTHORIZATION = 1001;
     public static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -38,6 +39,7 @@ public class Const {
     public static final String ACTION_SNOOZE_ALARM = "ACTION_SNOOZE_ALARM";
     public static final String ACTION_DISMISS_ALARM = "ACTION_DISMISS_ALARM";
     public static final String ACTION_UPDATE_DATA = "ACTION_UPDATE_DATA";
+    public static final String ACTION_ALARM = "ACTION_ALARM";
     public static final String SUNDAY = "SU";
     public static final String MONDAY = "MO";
     public static final String TUESDAY = "TU";
@@ -49,4 +51,8 @@ public class Const {
     public static final String DELETE_SUCCESS = "success";
     public static final String DEFAULT_EVENT_ID = "deefault_event_id";
     public static final int DAY_IN_MINUTES = 1440;
+    public static final String PRE_SNOOZE_TIME = "Snooze Time";
+    public static final String PRE_ALARM_SOUND = "Alarm Sound";
+    public static final java.lang.String MY_PREFERENCES = "com.framgia.youralarm1_preferences";
+    public static final int SCROLL_FAB_SHOW_THRESHOLD = 2;
 }

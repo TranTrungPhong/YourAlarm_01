@@ -30,4 +30,9 @@ public class PreferenceUtil {
                 .getString(key, null);
         return accountName;
     }
+    public String getStringData(String file, String key) {
+        String accountName = mContext.getSharedPreferences(file, Context.MODE_PRIVATE)
+                .getString(key, null);
+        return accountName;
+    }
 }

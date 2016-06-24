@@ -1,14 +1,17 @@
 package com.framgia.youralarm1.util;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.activity.MainActivity;
+import com.framgia.youralarm1.adapter.AlarmAdapter;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.data.MySqliteHelper;
 import com.framgia.youralarm1.models.ItemAlarm;
@@ -31,7 +34,7 @@ import java.util.Map;
 /**
  * Created by phongtran on 16/06/2016.
  */
-public class SyncEventToServer extends AsyncTask<Void, Void, String> {
+public class SyncEventToServer extends Fragment {
     private com.google.api.services.calendar.Calendar mService = null;
     private List<ItemAlarm> mItemAlarms;
     private List<String> mDaylist = new ArrayList<>();
@@ -40,12 +43,20 @@ public class SyncEventToServer extends AsyncTask<Void, Void, String> {
     private Activity mContext;
     private MySqliteHelper mySqliteHelper;
     private String mTimeEvent;
+    private MenuItem mMenuItem;
 
-    public SyncEventToServer(Activity context,
-                             GoogleAccountCredential credential,
-                             List<ItemAlarm> itemAlarms) {
+    public SyncEventToServer() {
+    }
+
+    public void getData(Activity context,
+                   GoogleAccountCredential credential,
+                   List<ItemAlarm> itemAlarms,
+                   MenuItem item,
+                   ProgressDialog progressDialog) {
         mContext = context;
         mItemAlarms = itemAlarms;
+        mMenuItem = item;
+        mProgress =  progressDialog;
         mySqliteHelper = new MySqliteHelper(mContext);
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -55,139 +66,152 @@ public class SyncEventToServer extends AsyncTask<Void, Void, String> {
                 .build();
     }
 
-    @Override
-    protected String doInBackground(Void... params) {
-        String response = null;
-        for (ItemAlarm itemAlarm : mItemAlarms) {
-//            if (itemAlarm.getTime() != 0) {
-            mTimeEvent = EventTimeUtil.eventTime(itemAlarm.getTime());
-//            }
-            if (mTimeEvent != null && itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
-                Event event = new Event()
-                        .setSummary(itemAlarm.getTitle().toString());
-                DateTime startDateTime = null;
-                try {
-                    startDateTime = new DateTime(mTimeEvent);
-                } catch (NumberFormatException e) {
-                    String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
-                    String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
-                    mTimeEvent = sd + ":" + sc;
-                    startDateTime = new DateTime(mTimeEvent);
-                }
-                EventDateTime start = new EventDateTime()
-                        .setDateTime(startDateTime)
-                        .setTimeZone(mContext.getString(R.string.time_zone));
-                event.setStart(start);
-                DateTime endDateTime = new DateTime(mTimeEvent);
-                EventDateTime end = new EventDateTime()
-                        .setDateTime(endDateTime)
-                        .setTimeZone(mContext.getString(R.string.time_zone));
-                event.setEnd(end);
-                try {
-                    event = mService.events()
-                            .insert(mContext.getString(R.string.primary), event)
-                            .execute();
-                    itemAlarm.setIdEvent(event.getId());
-                    mySqliteHelper.updateAlarm(itemAlarm);
-                    response = event.toString();
-                    continue;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (mTimeEvent != null && !itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
-                mDaylist = getRecurrence(itemAlarm);
-                for (int i = 0; i < mDaylist.size(); i++) {
-                    if (i < mDaylist.size() - 1) {
-                        mByDay.append(mDaylist.get(i).toString()).append(",");
-                    } else {
-                        mByDay.append(mDaylist.get(i).toString());
+    public void executeSync(){
+        new SyncEvent().execute();
+        EventUtil.setTimeOutDialog(mProgress);
+    }
+    public class SyncEvent extends AsyncTask<Void, Void, String> {
+
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String response = null;
+            for (ItemAlarm itemAlarm : mItemAlarms) {
+                mTimeEvent = EventTimeUtil.eventTime(itemAlarm.getTime());
+                if (mTimeEvent != null && itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
+                    Event event = new Event()
+                            .setSummary(itemAlarm.getTitle().toString());
+                    DateTime startDateTime = null;
+                    try {
+                        startDateTime = new DateTime(mTimeEvent);
+                    } catch (NumberFormatException e) {
+                        String sc = mTimeEvent.substring(mTimeEvent.length() - 2);
+                        String sd = mTimeEvent.substring(0, mTimeEvent.length() - 2);
+                        mTimeEvent = sd + ":" + sc;
+                        startDateTime = new DateTime(mTimeEvent);
+                    }
+                    EventDateTime start = new EventDateTime()
+                            .setDateTime(startDateTime)
+                            .setTimeZone(mContext.getString(R.string.time_zone));
+                    event.setStart(start);
+                    DateTime endDateTime = new DateTime(mTimeEvent);
+                    EventDateTime end = new EventDateTime()
+                            .setDateTime(endDateTime)
+                            .setTimeZone(mContext.getString(R.string.time_zone));
+                    event.setEnd(end);
+                    try {
+                        event = mService.events()
+                                .insert(mContext.getString(R.string.primary), event)
+                                .execute();
+                        itemAlarm.setIdEvent(event.getId());
+                        mySqliteHelper.updateAlarm(itemAlarm);
+                        mItemAlarms.clear();
+                        mItemAlarms.addAll(mySqliteHelper.getListAlarm());
+                        response = event.toString();
+                        continue;
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-                try {
-                    Event event = mService.events()
-                            .get(mContext.getString(R.string.primary), itemAlarm.getIdEvent())
-                            .execute();
-                    event.setSummary(itemAlarm.getTitle().toString());
-                    if (mDaylist.size() != 0) {
-                        String[] recurrence = new String[]{
-                                mContext.getString(R.string.recurrence_update) + mByDay
-                        };
-                        event.setRecurrence(Arrays.asList(recurrence));
+                if (mTimeEvent != null && !itemAlarm.getIdEvent().equals(Const.DEFAULT_EVENT_ID)) {
+                    mDaylist = getRecurrence(itemAlarm);
+                    for (int i = 0; i < mDaylist.size(); i++) {
+                        if (i < mDaylist.size() - 1) {
+                            mByDay.append(mDaylist.get(i).toString()).append(",");
+                        } else {
+                            mByDay.append(mDaylist.get(i).toString());
+                        }
                     }
-                    event = mService.events()
-                            .update(mContext.getString(R.string.primary), event.getId(), event)
-                            .execute();
-                    mySqliteHelper.updateAlarm(itemAlarm);
-                    response = event.toString();
-                    continue;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return response;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        mProgress = new ProgressDialog(mContext);
-        mProgress.setMessage(mContext.getString(R.string.sync_server));
-        mProgress.show();
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        mItemAlarms.clear();
-        mItemAlarms.addAll(mySqliteHelper.getListAlarm());
-        super.onPostExecute(s);
-        if (mProgress != null && mProgress.isShowing()) {
-            mProgress.dismiss();
-        }
-        if (s == null) {
-            Toast.makeText(mContext, R.string.syn_fails, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(mContext, R.string.syn_success, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private List<String> getRecurrence(ItemAlarm itemAlarm) {
-        List<String> listDay = new ArrayList<>();
-        if (itemAlarm.getWeekDayHashMap().containsValue(true)) {
-            Iterator iterator = itemAlarm.getWeekDayHashMap().entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                if ((boolean) entry.getValue()) {
-                    int dayAlarm = ((ItemAlarm.WeekDay) entry.getKey()).dayNumber();
-                    switch (dayAlarm) {
-                        case 1:
-                            listDay.add(Const.SUNDAY);
-                            break;
-                        case 2:
-                            listDay.add(Const.MONDAY);
-                            break;
-                        case 3:
-                            listDay.add(Const.TUESDAY);
-                            break;
-                        case 4:
-                            listDay.add(Const.WENESDAY);
-                            break;
-                        case 5:
-                            listDay.add(Const.THIRDAY);
-                            break;
-                        case 6:
-                            listDay.add(Const.FRIDAY);
-                            break;
-                        case 7:
-                            listDay.add(Const.SATUDAY);
-                            break;
-                        default:
-                            break;
+                    try {
+                        Event event = mService.events()
+                                .get(mContext.getString(R.string.primary), itemAlarm.getIdEvent())
+                                .execute();
+                        event.setSummary(itemAlarm.getTitle().toString());
+                        if (mDaylist.size() != 0) {
+                            String[] recurrence = new String[]{
+                                    mContext.getString(R.string.recurrence_update) + mByDay
+                            };
+                            event.setRecurrence(Arrays.asList(recurrence));
+                        }
+                        event = mService.events()
+                                .update(mContext.getString(R.string.primary), event.getId(), event)
+                                .execute();
+                        mySqliteHelper.updateAlarm(itemAlarm);
+                        response = event.toString();
+                        continue;
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
+            return response;
         }
-        return listDay;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if(mProgress == null ){
+                mProgress = new ProgressDialog(mContext);
+                mProgress.setMessage(mContext.getString(R.string.sync_server));
+                mProgress.show();
+                mProgress.setCancelable(false);
+                mProgress.setCanceledOnTouchOutside(false);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            mMenuItem.setEnabled(true);
+            mItemAlarms.clear();
+            mItemAlarms.addAll(mySqliteHelper.getListAlarm());
+            super.onPostExecute(s);
+            if (mProgress != null && mProgress.isShowing()) {
+                mProgress.dismiss();
+            }
+            if (s == null) {
+                Toast.makeText(mContext, R.string.syn_fails, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mContext, R.string.syn_success, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        private List<String> getRecurrence(ItemAlarm itemAlarm) {
+            List<String> listDay = new ArrayList<>();
+            if (itemAlarm.getWeekDayHashMap().containsValue(true)) {
+                Iterator iterator = itemAlarm.getWeekDayHashMap().entrySet().iterator();
+                while (iterator.hasNext()) {
+                    Map.Entry entry = (Map.Entry) iterator.next();
+                    if ((boolean) entry.getValue()) {
+                        int dayAlarm = ((ItemAlarm.WeekDay) entry.getKey()).dayNumber();
+                        switch (dayAlarm) {
+                            case 1:
+                                listDay.add(Const.SUNDAY);
+                                break;
+                            case 2:
+                                listDay.add(Const.MONDAY);
+                                break;
+                            case 3:
+                                listDay.add(Const.TUESDAY);
+                                break;
+                            case 4:
+                                listDay.add(Const.WENESDAY);
+                                break;
+                            case 5:
+                                listDay.add(Const.THIRDAY);
+                                break;
+                            case 6:
+                                listDay.add(Const.FRIDAY);
+                                break;
+                            case 7:
+                                listDay.add(Const.SATUDAY);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            return listDay;
+        }
     }
 }

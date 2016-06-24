@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.contstant.Const;
 import com.framgia.youralarm1.models.ItemAlarm;
+import com.framgia.youralarm1.util.PreferenceUtil;
 import com.framgia.youralarm1.utils.AlarmUtils;
 import com.framgia.youralarm1.utils.ParseTimeUtils;
 import com.framgia.youralarm1.widget.SlideButton;
@@ -39,6 +40,9 @@ public class AlertAlarmActivity extends AppCompatActivity
     private boolean mIsDismissed = false;
     private boolean mIsSnooze = false;
     private BroadcastReceiver mPowerPressReceiver;
+    private BroadcastReceiver mStatusReceiver;
+    private long mSnoozeTime;
+    private PreferenceUtil mPreferenceUtil;
 
     @Override
     public void onAttachedToWindow() {
@@ -83,10 +87,12 @@ public class AlertAlarmActivity extends AppCompatActivity
         String action = intent.getAction();
         switch (action){
             case Const.ACTION_SNOOZE_ALARM:
-                onSnoozeAlarm();
+                Intent snoozeIntent = new Intent(Const.ACTION_SNOOZE_ALARM);
+                sendBroadcast(snoozeIntent);
                 break;
             case Const.ACTION_DISMISS_ALARM:
-                onDismissAlarm();
+                Intent dismissIntent = new Intent(Const.ACTION_DISMISS_ALARM);
+                sendBroadcast(dismissIntent);
                 break;
             case Const.ACTION_FULLSCREEN_ACTIVITY:
                 playRingAndVibrate();
@@ -108,11 +114,20 @@ public class AlertAlarmActivity extends AppCompatActivity
         if (itemAlarm != null) {
             if (itemAlarm.getWeekDayHashMap().containsValue(true)) {
                 //TODO: set the next time alarm;
-                AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true);
+                AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true, false);
             }
             mTextTitle.setText(itemAlarm.getTitle());
             mTextTime.setText(ParseTimeUtils.formatTextTime(itemAlarm.getTime()));
         }
+        mPreferenceUtil = new PreferenceUtil(AlertAlarmActivity.this);
+        try {
+            mSnoozeTime = Long.parseLong(mPreferenceUtil.getStringData(Const.MY_PREFERENCES,
+                                                                       Const.PRE_SNOOZE_TIME));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            mSnoozeTime = -1;
+        }
+
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -124,7 +139,8 @@ public class AlertAlarmActivity extends AppCompatActivity
 
             @Override
             public void onFinish() {
-                AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
+                if (mSnoozeTime != -1)
+                    AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, mSnoozeTime);
                 updateWhenAppOpenning();
                 finish();
             }
@@ -178,7 +194,7 @@ public class AlertAlarmActivity extends AppCompatActivity
 
     private void onDismissAlarm() {
         mIsDismissed = true;
-        AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true);
+        AlarmUtils.setNextAlarm(AlertAlarmActivity.this, itemAlarm, true, false);
         mCountDownTimer.cancel();
         updateWhenAppOpenning();
         finish();
@@ -187,7 +203,7 @@ public class AlertAlarmActivity extends AppCompatActivity
     private void onSnoozeAlarm() {
         mIsSnooze = true;
         mCountDownTimer.cancel();
-        AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, SNOOZE_TIME);
+        AlarmUtils.setSnoozeAlarm(AlertAlarmActivity.this, itemAlarm, mSnoozeTime);
         updateWhenAppOpenning();
         finish();
     }
@@ -202,6 +218,25 @@ public class AlertAlarmActivity extends AppCompatActivity
         super.onResume();
         mIsDismissed = false;
         mIsSnooze = false;
+
+        if (mStatusReceiver == null) {
+            mStatusReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    switch (intent.getAction()) {
+                        case Const.ACTION_DISMISS_ALARM:
+                            onDismissAlarm();
+                            break;
+                        case Const.ACTION_SNOOZE_ALARM:
+                            onSnoozeAlarm();
+                            break;
+                    }
+                }
+            };
+        }
+        IntentFilter filterAlarm = new IntentFilter(Const.ACTION_ALARM);
+        registerReceiver(mStatusReceiver, filterAlarm);
+
         if (mPowerPressReceiver == null) {
             mPowerPressReceiver  = new BroadcastReceiver() {
                 @Override
@@ -222,9 +257,20 @@ public class AlertAlarmActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        finish();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mPowerPressReceiver);
+        if (mPowerPressReceiver != null) {
+            unregisterReceiver(mPowerPressReceiver);
+        }
+        if (mStatusReceiver != null) {
+            unregisterReceiver(mStatusReceiver);
+        }
         if (!mIsDismissed && !mIsSnooze)
             onDismissAlarm();
         stopAlarm();

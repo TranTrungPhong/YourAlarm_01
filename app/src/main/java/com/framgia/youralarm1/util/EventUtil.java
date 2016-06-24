@@ -2,10 +2,12 @@ package com.framgia.youralarm1.util;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -89,6 +91,19 @@ public class EventUtil {
                 connectionStatusCode,
                 Const.REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
+    }
+
+    public static void setTimeOutDialog(final ProgressDialog mProgress){
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run() {
+                if(mProgress != null && mProgress.isShowing()){
+                    mProgress.dismiss();
+                }
+            }
+        }, 5000 );
     }
 
 }

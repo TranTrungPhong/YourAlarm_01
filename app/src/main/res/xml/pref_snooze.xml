@@ -1,0 +1,11 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="60000"
+        android:entries="@array/pref_snooze_time_entries"
+        android:entryValues="@array/pref_snooze_time_values"
+        android:key="@string/pref_snooze_time"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_snooze_time"/>
+
+</PreferenceScreen>

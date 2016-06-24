@@ -1,13 +1,13 @@
 <resources>
-    <string name="app_name">YourAlarm1</string>
+    <string name="app_name">Super Alarm</string>
     <string name="action_settings">Settings</string>
-    <string name="sunday_short">S</string>
-    <string name="monday_short">M</string>
-    <string name="tuesday_short">T</string>
-    <string name="wednesday_short">W</string>
-    <string name="thursday_short">T</string>
-    <string name="friday_short">F</string>
-    <string name="saturday_short">S</string>
+    <string name="sunday_short">SU</string>
+    <string name="monday_short">MO</string>
+    <string name="tuesday_short">TU</string>
+    <string name="wednesday_short">WE</string>
+    <string name="thursday_short">TH</string>
+    <string name="friday_short">FR</string>
+    <string name="saturday_short">SA</string>
     <string name="vibrate">Vibrate</string>
     <string name="title">Title</string>
     <string name="error_implement_alarm_adapter">" must implement OnChooseWeekdayListener"</string>
@@ -42,6 +42,8 @@
     <string name="permission_get_account_ok">permission get accounts OK</string>
     <string name="permission_get_account_failed">You need to access your contacts to sync data
         with google calendar API</string>
+     <string name="permission_write_setting_failed">You need to access write setting to
+         change default ringtone</string>
     <string name="recurrence_update">RRULE:FREQ=WEEKLY;COUNT=6;BYDAY=</string>
     <string name="time_zone">(GMT+7:00) Hà Nội</string>
     <string name="create_fail">Creating on server fail !</string>
@@ -64,5 +66,60 @@
     <string name="notify_set_alarm">Alarm ring after </string>
     <string name="day">day</string>
     <string name="done">Done !</string>
+    <string name="alarm_cancelled">cancelled</string>
+    <string name="alarm_deleted">deleted</string>
+    <string name="next_alarm">Next alarm after</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string-array name="pref_snooze_time_entries">
+        <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_snooze_time_values">
+        <item>300000</item>
+        <item>900000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_header_alarm_sound">Alarm sound</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_key_alarm_sound">Alarm Sound</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_snooze_time">Snooze Time</string>
+    <string name="pref_snooze">Snooze</string>
+    <string name="delete">Delete</string>
+    <string name="pref_title_alarm_sound">Default alarm sound</string>
+    <string name="confirm_exit">Press back again to exit.</string>
 
 </resources>

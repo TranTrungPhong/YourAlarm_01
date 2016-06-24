@@ -7,129 +7,14 @@
     android:layout_height="wrap_content"
     android:background="@color/bg_item_alarm"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin">
+    >
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/text_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:padding="@dimen/abc_control_padding_material"
-            android:textColor="@color/color_text_item_alarm"
-            android:textSize="@dimen/abc_text_size_display_3_material"/>
-
-        <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switch_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|right"
-            android:padding="@dimen/abc_control_padding_material"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layout_expand"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="visible">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:text="@string/repeat"
-            android:textColor="@color/color_text_item_alarm"
-            android:textSize="@dimen/abc_text_size_medium_material"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:orientation="horizontal">
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_sunday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/sunday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_monday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/monday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_tuesday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/tuesday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_wednesday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/wednesday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_thursday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/thursday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_friday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/friday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-            <com.framgia.youralarm1.widget.CircularButton
-                android:id="@+id/circle_button_saturday"
-                android:layout_width="0dp"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_weight="1"
-                app:backgroundSelectedColor="@color/color_background_button_day"
-                app:text="@string/saturday_short"
-                app:textColor="@color/color_text_button_day"
-                app:textSize="@dimen/text_size_button_day"/>
-
-        </LinearLayout>
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -137,92 +22,215 @@
             android:orientation="horizontal">
 
             <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/text_select_ringtone"
+                android:id="@+id/text_time"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:padding="@dimen/abc_control_padding_material"
+                android:textColor="@color/color_text_item_alarm"
+                android:textSize="@dimen/abc_text_size_display_3_material"/>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switch_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|right"
+                android:padding="@dimen/abc_control_padding_material"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_expand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_weight="4"
-                android:drawableLeft="@android:drawable/ic_popup_reminder"
-                android:drawablePadding="@dimen/drawable_padding"
-                android:gravity="center_vertical"
+                android:text="@string/repeat"
+                android:textColor="@color/color_text_item_alarm"
+                android:textSize="@dimen/abc_text_size_medium_material"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:orientation="horizontal">
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_sunday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/sunday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_monday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/monday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_tuesday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/tuesday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_wednesday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/wednesday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_thursday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/thursday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_friday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/friday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+                <com.framgia.youralarm1.widget.CircularButton
+                    android:id="@+id/circle_button_saturday"
+                    android:layout_width="0dp"
+                    android:layout_height="@android:dimen/notification_large_icon_height"
+                    android:layout_weight="1"
+                    app:backgroundSelectedColor="@color/color_background_button_day"
+                    app:text="@string/saturday_short"
+                    app:textColor="@color/color_text_button_day"
+                    app:textSize="@dimen/text_size_button_day"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/text_select_ringtone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_weight="4"
+                    android:drawableLeft="@android:drawable/ic_popup_reminder"
+                    android:drawablePadding="@dimen/drawable_padding"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:textColor="@color/color_text_item_alarm"
+                    android:textSize="@dimen/abc_text_size_medium_material"/>
+
+                <android.support.v7.widget.AppCompatCheckBox
+                    android:id="@+id/checkbox_vibrate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vibrate"
+                    android:textColor="@color/color_text_item_alarm"
+                    android:textSize="@dimen/abc_text_size_medium_material"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:background="@drawable/border_view"
+                android:hint="@string/title"
                 android:padding="@dimen/activity_horizontal_margin"
                 android:textColor="@color/color_text_item_alarm"
-                android:textSize="@dimen/abc_text_size_medium_material"/>
-
-            <android.support.v7.widget.AppCompatCheckBox
-                android:id="@+id/checkbox_vibrate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/vibrate"
-                android:textColor="@color/color_text_item_alarm"
+                android:textColorHint="@color/color_text_item_alarm"
                 android:textSize="@dimen/abc_text_size_medium_material"/>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/text_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:hint="@string/title"
-            android:padding="@dimen/activity_horizontal_margin"
-            android:textColor="@color/color_text_item_alarm"
-            android:textColorHint="@color/color_text_item_alarm"
-            android:textSize="@dimen/abc_text_size_medium_material"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:id="@+id/frame_action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/text_title_collapse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:hint="@string/title"
-                android:padding="@dimen/abc_control_padding_material"
-                android:textColorHint="@color/color_text_item_alarm"
-                android:textColor="@color/color_text_item_alarm"
-                android:textSize="@dimen/abc_text_size_medium_material"/>
-
-            <ImageView
-                android:id="@+id/image_action_delete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_delete"
-                android:visibility="gone"/>
-        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="right|center_vertical"
-            android:paddingRight="@dimen/activity_horizontal_margin">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-
-            <ImageView
-                android:id="@+id/image_expand_item"
+            <FrameLayout
+                android:id="@+id/frame_action"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/text_title_collapse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:hint="@string/title"
+                    android:padding="@dimen/abc_control_padding_material"
+                    android:textColor="@color/color_text_item_alarm"
+                    android:textColorHint="@color/color_text_item_alarm"
+                    android:textSize="@dimen/abc_text_size_medium_material"/>
+
+                <ImageView
+                    android:id="@+id/image_action_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:visibility="gone"/>
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:src="@android:drawable/arrow_down_float"/>
+                android:gravity="right|center_vertical"
+                android:paddingRight="@dimen/activity_horizontal_margin">
+
+
+                <ImageView
+                    android:id="@+id/image_expand_item"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:src="@android:drawable/arrow_down_float"/>
+            </LinearLayout>
         </LinearLayout>
+
     </LinearLayout>
 
 
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/divider_height"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_horizontal_margin"
         android:background="@color/color_divider_item_alarm"/>
 

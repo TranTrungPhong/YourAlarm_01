@@ -7,4 +7,9 @@
         android:icon="@android:drawable/ic_menu_rotate"
         app:showAsAction="ifRoom"
         android:title="@string/sync_server"/>
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="never"
+        />
 </menu>

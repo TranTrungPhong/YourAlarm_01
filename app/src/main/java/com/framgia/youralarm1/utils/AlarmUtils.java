@@ -22,7 +22,8 @@ import java.util.Map;
 public class AlarmUtils {
     private static final String TAG = NotificationUtils.class.getName();
 
-    public static void setAlarm(Context context, ItemAlarm itemAlarm, int numDayAfter) {
+    public static void setAlarm(Context context, ItemAlarm itemAlarm, int numDayAfter,
+                                boolean isNotify) {
         if (itemAlarm.isStatus()) {
             AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(context, AlarmReceiver.class);
@@ -54,12 +55,40 @@ public class AlarmUtils {
                                              AlarmManager.INTERVAL_DAY, alarmIntent);
             else
                 alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+            if (isNotify)
+                Toast.makeText(context, setAlarmToast(context, calendar), Toast.LENGTH_SHORT).show();
         } else {
             cancelAlarm(context, itemAlarm);
         }
     }
 
-    public static void setNextAlarm(Context context, ItemAlarm itemAlarm, boolean isRinging) {
+    private static String setAlarmToast(Context context, Calendar calendar) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Calendar nowCal = Calendar.getInstance();
+        int day = Math.round((calendar.getTimeInMillis() - nowCal.getTimeInMillis()) /
+                            (Const.DAY_IN_MINUTES * Const.MINUTE_IN_MILIS));
+        int hour = calendar.get(Calendar.HOUR_OF_DAY) - nowCal.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE) - 1 - nowCal.get(Calendar.MINUTE);
+        if (minute < 0) {
+            minute = 60 + minute;
+            hour -= 1;
+        } else if (minute == 0)
+            minute = 1;
+        if (hour < 0) {
+            hour = 24 + hour;
+            day -= 1;
+        }
+
+        stringBuilder.append(context.getString(R.string.next_alarm));
+        if (day > 0) stringBuilder.append(" " + day + " days");
+        if (hour > 0) stringBuilder.append( " " + hour + " hours");
+        if (minute > 0) stringBuilder.append(" " + minute + " minutes");
+
+        return stringBuilder.toString();
+    }
+
+    public static void setNextAlarm(Context context, ItemAlarm itemAlarm, boolean isRinging,
+                                    boolean isNotify) {
         int numdayNext = 0;
         int today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if(itemAlarm.getWeekDayHashMap().containsValue(true)) {
@@ -92,7 +121,7 @@ public class AlarmUtils {
                     itemAlarm.setStatus(false);
             }
         }
-        setAlarm(context, itemAlarm, numdayNext);
+        setAlarm(context, itemAlarm, numdayNext, isNotify);
     }
 
     public static void cancelAlarm(Context context, ItemAlarm itemAlarm) {
@@ -105,7 +134,6 @@ public class AlarmUtils {
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.cancel(alarm);
         NotificationUtils.cancelNotification(context, itemAlarm);
-        Toast.makeText(context, R.string.alarm_cancel, Toast.LENGTH_SHORT).show();
         MySqliteHelper mySqliteHelper = new MySqliteHelper(context);
         try {
             if (mySqliteHelper.haveAlarm(itemAlarm))
@@ -127,7 +155,8 @@ public class AlarmUtils {
                                                                PendingIntent.FLAG_UPDATE_CURRENT);
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
 
-        int currenTime = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
+        int currenTime = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE) + 1;
+        if (snoozeTime < Const.MINUTE_IN_MILIS) snoozeTime = Const.MINUTE_IN_MILIS;
         int count =
                 (int) ((currenTime - itemAlarm.getTime()) / (snoozeTime / Const.MINUTE_IN_MILIS));
 

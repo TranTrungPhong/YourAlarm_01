@@ -1,0 +1,10 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RingtonePreference
+        android:key="@string/pref_key_alarm_sound"
+        android:defaultValue="content://settings/system/alarm_alert"
+        android:ringtoneType="alarm"
+        android:showSilent="false"
+        android:title="@string/pref_title_alarm_sound"/>
+
+</PreferenceScreen>
