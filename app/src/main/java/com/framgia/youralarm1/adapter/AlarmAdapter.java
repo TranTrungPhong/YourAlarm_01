@@ -315,7 +315,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> 
                 break;
             case R.id.image_action_delete:
                 mOnAdapterInterActionListener.onDeletedAlarm(position);
-                    checkFloatAddAlarm(false);
+//                    checkFloatAddAlarm(false);
                 break;
             case R.id.layout_parent:
                 isClickExpand = true;

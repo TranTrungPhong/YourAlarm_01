@@ -18,13 +18,16 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
+
 import com.framgia.youralarm1.R;
 import com.framgia.youralarm1.contstant.Const;
+
 import java.util.List;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener =
+            new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
@@ -44,7 +47,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     Context context = preference.getContext();
                     Uri currenturi =
                             RingtoneManager.getActualDefaultRingtoneUri(context,
-                                                                        RingtoneManager.TYPE_ALARM);
+                                    RingtoneManager.TYPE_ALARM);
                     String ringToneName =
                             RingtoneManager.getRingtone(context, currenturi)
                                     .getTitle(context);
@@ -52,17 +55,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                 } else {
                     Ringtone ringtone;
-                    if (!stringValue.equals(String.valueOf(Settings.System.DEFAULT_ALARM_ALERT_URI))) {
-                        ringtone = RingtoneManager.getRingtone(preference.getContext(), Uri.parse(stringValue));
+                    if (!stringValue
+                            .equals(String.valueOf(Settings.System.DEFAULT_ALARM_ALERT_URI))) {
+                        ringtone = RingtoneManager.getRingtone(preference.getContext(),
+                                Uri.parse(stringValue));
                         String name = ringtone.getTitle(preference.getContext());
                         preference.setSummary(name);
                     } else {
                         Context context = preference.getContext();
                         Uri currenturi =
                                 RingtoneManager.getActualDefaultRingtoneUri(context,
-                                                                            RingtoneManager.TYPE_RINGTONE);
+                                        RingtoneManager.TYPE_RINGTONE);
                         String ringToneName = RingtoneManager.getRingtone(context, currenturi)
-                                                                .getTitle(context);
+                                .getTitle(context);
                         ringToneName += Const.DEFAULT;
                         preference.setSummary(ringToneName);
                     }
@@ -76,13 +81,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     };
 
     private static boolean isXLargeTablet(Context context) {
-        return (context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
+        return (context.getResources().getConfiguration().screenLayout &
+                Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
     private static void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(
+        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                PreferenceManager.getDefaultSharedPreferences(
                 preference.getContext()).getString(preference.getKey(), ""));
     }
 

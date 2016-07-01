@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity
             updateListAlarm();
             if (mFab != null)
                 mFab.setVisibility(View.VISIBLE);
-
         }
     };
     private MakeRequestTask mMake;
@@ -183,41 +182,41 @@ public class MainActivity extends AppCompatActivity
         });
         ItemTouchHelper.SimpleCallback simpleCallback =
                 new ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT, ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                                  RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                onDeletedAlarm(viewHolder.getAdapterPosition());
-            }
-
-            @Override
-            public void onChildDraw(Canvas c, RecyclerView recyclerView,
-                                    RecyclerView.ViewHolder viewHolder, float dX, float dY,
-                                    int actionState, boolean isCurrentlyActive) {
-
-                Bitmap icon;
-                if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE){
-                    View itemView = viewHolder.itemView;
-                    float height = (float) itemView.getBottom() - (float) itemView.getTop();
-                    float width = height / 3;
-                    Paint p = new Paint();
-                        p.setColor(getResources().getColor(R.color.bg_layut_delete));
-                       RectF background = new RectF((float) itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
-                      c.drawRect(background,p);
-                    icon = new IconicsDrawable(MainActivity.this, FontAwesome.Icon
-                            .faw_trash).color(Color.WHITE).toBitmap();
-                     RectF icon_dest = new RectF((float) itemView.getRight() - 2*width ,(float) itemView.getTop() + width,(float) itemView.getRight() - width,(float)itemView.getBottom() - width);
-                      c.drawBitmap(icon,null,icon_dest,p);
-
+                    @Override
+                    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                          RecyclerView.ViewHolder target) {
+                        return false;
                     }
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState,
-                                  isCurrentlyActive);
-            }
-        };
+
+                    @Override
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                        onDeletedAlarm(viewHolder.getAdapterPosition());
+                    }
+
+                    @Override
+                    public void onChildDraw(Canvas c, RecyclerView recyclerView,
+                                            RecyclerView.ViewHolder viewHolder, float dX, float dY,
+                                            int actionState, boolean isCurrentlyActive) {
+
+                        Bitmap icon;
+                        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                            View itemView = viewHolder.itemView;
+                            float height = (float) itemView.getBottom() - (float) itemView.getTop();
+                            float width = height / 3;
+                            Paint p = new Paint();
+                            p.setColor(getResources().getColor(R.color.bg_layut_delete));
+                            RectF background = new RectF((float) itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
+                            c.drawRect(background, p);
+                            icon = new IconicsDrawable(MainActivity.this, FontAwesome.Icon
+                                    .faw_trash).color(Color.WHITE).toBitmap();
+                            RectF icon_dest = new RectF((float) itemView.getRight() - 2 * width, (float) itemView.getTop() + width, (float) itemView.getRight() - width, (float) itemView.getBottom() - width);
+                            c.drawBitmap(icon, null, icon_dest, p);
+
+                        }
+                        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState,
+                                isCurrentlyActive);
+                    }
+                };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
@@ -256,7 +255,7 @@ public class MainActivity extends AppCompatActivity
 //                        Uri defaultRingtonePath =
 //                                RingtoneManager.getActualDefaultRingtoneUri(MainActivity.this,
 //                                                                            RingtoneManager.TYPE_RINGTONE);
-                        if(uri.equals(Settings.System.DEFAULT_RINGTONE_URI))
+                        if (uri.equals(Settings.System.DEFAULT_RINGTONE_URI))
                             uri = Uri.parse("");
                         Log.d(TAG, uri.toString());
                         int listSize = mAlarmList.size();
@@ -358,10 +357,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDeletedAlarm(int position) {
-        if(mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
+        if (mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
                 && EventUtil.isDeviceOnline()) {
             mDeleteEvent = new DeleteEvent();
-            mDeleteEvent.getData(MainActivity.this,mCredential,mAlarmList.get(position));
+            mDeleteEvent.getData(MainActivity.this, mCredential, mAlarmList.get(position));
             mDeleteEvent.excuteDelete();
         }
         try {
@@ -378,9 +377,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onChangedAlarm(int position) {
-        if(mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
+        if (mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
                 && EventUtil.isDeviceOnline()) {
-            mUpdateEvent  = new UpdateEvent();
+            mUpdateEvent = new UpdateEvent();
             mUpdateEvent.getData(MainActivity.this, mCredential, mAlarmList.get(position));
             mUpdateEvent.executeUpdate();
         }
@@ -416,10 +415,10 @@ public class MainActivity extends AppCompatActivity
                             } catch (SQLiteException e) {
                                 e.printStackTrace();
                             }
-                            if(mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
-                                    && EventUtil.isDeviceOnline()){
+                            if (mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME) != null
+                                    && EventUtil.isDeviceOnline()) {
                                 mTestNew = new CreatEvent();
-                                mTestNew.getData(MainActivity.this,mCredential,itemAlarm);
+                                mTestNew.getData(MainActivity.this, mCredential, itemAlarm);
                                 mTestNew.excuteAsyntask();
                             }
                         }
@@ -485,7 +484,7 @@ public class MainActivity extends AppCompatActivity
         String result = mEventUtil.getResultsFromApi();
         if (result.equals(Const.ACCOUNT_SUCCESS)) {
             mMake = new MakeRequestTask();
-            mMake.getData(MainActivity.this,mCredential);
+            mMake.getData(MainActivity.this, mCredential);
             mMake.excuteMake();
         } else if (result.equals(Const.NO_INTERNET)) {
             Toast.makeText(this, R.string.no_network, Toast.LENGTH_SHORT).show();
@@ -495,14 +494,14 @@ public class MainActivity extends AppCompatActivity
         mAlarmList.clear();
         mAlarmList.addAll(mMySqliteHelper.getListAlarm());
         mAlarmAdapter.notifyDataSetChanged();
-        if(mCheckSyn){
+        if (mCheckSyn) {
             String acc = mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME);
-            if(acc != null
+            if (acc != null
                     && EventUtil.isDeviceOnline()) {
                 mFromServer = new SynEventFromServer();
-                mFromServer.getData(MainActivity.this,mCredential,mAlarmList,mMenuItem);
+                mFromServer.getData(MainActivity.this, mCredential, mAlarmList, mMenuItem);
                 mFromServer.executeSyncFromServer();
-            }else{
+            } else {
                 mCheckSyn = false;
             }
         }
@@ -531,12 +530,12 @@ public class MainActivity extends AppCompatActivity
                 mProgress.dismiss();
             }
             String acc = mPreferenceUtil.getStringData(Const.PREF_ACCOUNT_NAME);
-            if(acc != null
+            if (acc != null
                     && EventUtil.isDeviceOnline()) {
                 mFromServer = new SynEventFromServer();
-                mFromServer.getData(MainActivity.this,mCredential,alarmList,item);
+                mFromServer.getData(MainActivity.this, mCredential, alarmList, item);
                 mFromServer.executeSyncFromServer();
-            }else{
+            } else {
                 item.setEnabled(true);
             }
         } else if (item.getItemId() == R.id.action_settings) {
@@ -545,7 +544,8 @@ public class MainActivity extends AppCompatActivity
         }
         return super.onOptionsItemSelected(item);
     }
-    public class SynEventFromServer extends Fragment{
+
+    public class SynEventFromServer extends Fragment {
         private Activity mActivity;
         private com.google.api.services.calendar.Calendar mService = null;
         private Exception mLastError = null;
@@ -569,9 +569,11 @@ public class MainActivity extends AppCompatActivity
                     .setApplicationName(mActivity.getString(R.string.application_name))
                     .build();
         }
-        public void executeSyncFromServer(){
+
+        public void executeSyncFromServer() {
             new SyncFromServer().execute();
         }
+
         public class SyncFromServer extends AsyncTask<Void, Void, List<Event>> {
 
 
@@ -681,7 +683,7 @@ public class MainActivity extends AppCompatActivity
                     mAlarmAdapter.notifyDataSetChanged();
                 }
                 mToServer = new SyncEventToServer();
-                mToServer.getData(mActivity, mCredential, mItemAlarms,mMenuItem);
+                mToServer.getData(mActivity, mCredential, mItemAlarms, mMenuItem);
                 mToServer.executeSync();
             }
 
